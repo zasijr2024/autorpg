@@ -1,48 +1,121 @@
-# AutoRPG – Core Combat Systems
+# AutoRPG – Core Systems Specification
 
-This document defines all global, biome-agnostic systems for AutoRPG.
-All values are relative; no fixed numbers are used.
-
----
-
-## Design Responsibilities
-
-- Weapons define WHAT hits
-- Skills define HOW it hits
-- Prefixes define SPECIAL EFFECTS
-- Armor Types define RESISTANCES & VULNERABILITIES
-- Materials define QUALITY & TIER
-- Archetypes define BEHAVIOR
-- Races define BIOLOGY
-
-No responsibility overlaps.
+This document defines all **biome-agnostic core systems** for AutoRPG.
+All values are **relative**; no fixed numbers are used.
 
 ---
 
-## Damage Types
+## Table of Contents
+
+1. Design Principles & Global Rules  
+2. Core Taxonomies  
+   - Damage Types  
+   - Rarities  
+   - Weapon & Armor Labels  
+3. Combat Building Blocks  
+   - Weapons  
+   - Attack Skills  
+4. Modifiers & Effects  
+   - Support Prefixes  
+   - Status Effects  
+5. Defense & Materials  
+   - Armor Types  
+   - Materials  
+6. Entity Identity  
+   - Archetypes  
+   - Races / Subtypes  
+7. Encounter & Boss Design  
+   - Encounter Composition Rules  
+   - Boss Phase Rules  
+8. Loot & Rewards  
+
+---
+
+## 1. Design Principles & Global Rules
+
+- Weapons define **WHAT hits**
+- Skills define **HOW it hits**
+- Prefixes define **SPECIAL EFFECTS**
+- Armor Types define **RESISTANCES & VULNERABILITIES**
+- Materials define **QUALITY & TIER**
+- Archetypes define **BEHAVIOR**
+- Races define **BIOLOGY**
+- Rarity defines **COMPLEXITY & REWARD**
+
+No system may duplicate another system’s responsibility.
+
+### Global Combat Rules
+- Attack speed comes from **skills and prefixes only**
+- Armor speed penalties apply after skill speed
+- Damage resolution order:
+  1. Damage Type  
+  2. Armor Type  
+  3. Race modifiers  
+  4. Status & Prefix effects
+- DOT effects tick independently of attack speed
+
+---
+
+## 2. Core Taxonomies
+
+### 2.1 Damage Types
 
 | Damage Type | Category | Description |
 |------------|----------|-------------|
-| Slashing | Physical | Cutting damage from blades or claws |
-| Piercing | Physical | Penetrating pointed damage |
-| Crushing | Physical | Blunt force and impact |
-| Missile | Physical | Ranged physical projectiles |
-| Fire | Elemental | Heat and burning |
-| Cold | Elemental | Freezing and chilling |
-| Electricity | Elemental | Lightning and shock |
-| Acid | Elemental | Corrosive damage |
-| Magic | Magical | Pure non-elemental energy |
-| Poison | Exotic | Toxic damage over time |
-| Disease | Exotic | Persistent weakening damage |
+| Slashing | Physical | Cutting damage |
+| Piercing | Physical | Penetrating damage |
+| Crushing | Physical | Blunt force |
+| Missile | Physical | Ranged projectiles |
+| Fire | Elemental | Burning |
+| Cold | Elemental | Freezing |
+| Electricity | Elemental | Shock |
+| Acid | Elemental | Corrosion |
+| Magic | Magical | Pure energy |
+| Poison | Exotic | Toxic DOT |
+| Disease | Exotic | Persistent weakening DOT |
 
 ---
 
-## Weapons
+### 2.2 Rarities
 
-> Weapons define damage profile and reach only.
+| Rarity | Scope | Description |
+|------|-------|-------------|
+| Common | All | Baseline |
+| Uncommon | All | One modifier |
+| Rare | All | Strong identity |
+| Epic | All | Rule-altering |
+| Unique | Boss only | Handcrafted |
 
-| Weapon Name | Label | Damage | Damage Type | Reach |
-|------------|-------|--------|-------------|-------|
+**Rules**
+- Skills have no rarity
+- Unique rarity is reserved for bosses and boss loot
+- Only one Epic entity per encounter
+
+---
+
+### 2.3 Weapon & Armor Labels
+
+**Weapon Labels**
+- Wielded
+- Natural
+- Innate
+- Ranged
+
+**Armor Labels**
+- Worn
+- Natural
+- Innate
+
+Labels are informational and used for AI, loot, and crafting logic.
+
+---
+
+## 3. Combat Building Blocks
+
+### 3.1 Weapons
+
+| Weapon | Label | Damage | Type | Reach |
+|------|-------|--------|------|-------|
 | Teeth | Natural | Low | Piercing | Short |
 | Claws | Natural | Low | Slashing | Short |
 | Paw | Natural | Normal | Crushing | Short |
@@ -61,10 +134,10 @@ No responsibility overlaps.
 
 ---
 
-## Attack Skills
+### 3.2 Attack Skills
 
-| Skill | Damage | Hit Chance | Speed | Crit |
-|------|--------|------------|-------|------|
+| Skill | Damage | Hit | Speed | Crit |
+|------|--------|-----|-------|------|
 | Bite | Normal | Low | Fast | Normal |
 | Claw Swipe | Low | High | Very Fast | Low |
 | Heavy Slam | High | Low | Very Slow | High |
@@ -81,32 +154,40 @@ No responsibility overlaps.
 
 ---
 
-## Support Prefixes
+## 4. Modifiers & Effects
+
+### 4.1 Support Prefixes
 
 | Prefix | Effect |
-|-------|--------|
+|------|--------|
 | Poisonous | Applies Poison |
 | Diseased | Applies Disease |
 | Bleeding | Physical DOT |
 | Burning | Fire DOT |
-| Freezing | Slow effects |
-| Shocking | Interrupt / stun chance |
-| Corrosive | Reduces armor |
+| Freezing | Slow |
+| Shocking | Interrupt |
+| Corrosive | Armor reduction |
 | Crushing | Armor penetration |
-| Precise | Hit chance bonus |
-| Savage | Damage ↑, accuracy ↓ |
-| Rapid | Attack interval ↓ |
-| Heavy | Damage ↑, speed ↓ |
-| Vicious | Crit chance & damage ↑ |
+| Precise | Hit chance ↑ |
+| Savage | Damage ↑ / accuracy ↓ |
+| Rapid | Speed ↑ |
+| Heavy | Damage ↑ / speed ↓ |
+| Vicious | Crit ↑ |
 | Leeching | Life steal |
 | Infectious | DOT spreads |
-| Frenzied | Speed increases at low HP |
-| Broodbound | Bonuses near allies |
+| Frenzied | Speed ↑ at low HP |
+| Broodbound | Ally proximity bonus |
 | Regenerating | HP regen |
+
+**Prefix Rules**
+- Early: 1
+- Mid: 2
+- Late: 3
+- Only one speed-affecting prefix allowed
 
 ---
 
-## Status Effects
+### 4.2 Status Effects
 
 | Status | Type | Effect | Stacking |
 |------|------|--------|----------|
@@ -116,18 +197,20 @@ No responsibility overlaps.
 | Burning | Fire | DOT | None |
 | Freezing | Cold | Slow | None |
 | Shocked | Elec | Interrupt | None |
-| Corroded | Acid | Armor reduction | Duration |
+| Corroded | Acid | Armor ↓ | Duration |
 | Weakened | Physical | Damage ↓ | None |
 | Vulnerable | Any | Damage taken ↑ | None |
-| Stunned | Control | No actions | None |
+| Stunned | Control | No action | None |
 | Rooted | Control | No movement | None |
 
 ---
 
-## Armor Types
+## 5. Defense & Materials
 
-| Armor | Label | Speed | Resist | Vulnerable |
-|------|-------|-------|--------|------------|
+### 5.1 Armor Types
+
+| Armor | Label | Speed | Resist | Weak |
+|------|-------|-------|--------|------|
 | Skin | Innate | Normal | None | None |
 | Fur | Natural | Normal | Cold | Fire |
 | Leather | Worn | Normal | Piercing | Cold |
@@ -143,26 +226,28 @@ No responsibility overlaps.
 
 ---
 
-## Materials
+### 5.2 Materials
 
 | Material | Weapon Effect | Armor Effect |
-|---------|---------------|--------------|
-| Flesh | Very low quality | No protection |
+|--------|---------------|--------------|
+| Flesh | Very low | None |
 | Leather | Flexible | Light |
 | Bone | Crit bias | Moderate |
 | Wood | Standard | Light |
-| Stone | Heavy, slow | Heavy |
-| Copper | Poor penetration | Light |
+| Stone | Heavy | Heavy |
+| Copper | Poor pen | Light |
 | Iron | Reliable | Strong |
 | Steel | Crit bonus | Strong |
 | Silver | Bonus vs magical | Magic resist |
 | Gold | Decorative | None |
 | Chitin | Fast | Resilient |
-| Mithril | High-tier | Low penalty |
+| Mithril | High tier | Low penalty |
 
 ---
 
-## Archetypes
+## 6. Entity Identity
+
+### 6.1 Archetypes
 
 | Archetype | Role |
 |----------|------|
@@ -178,7 +263,7 @@ No responsibility overlaps.
 
 ---
 
-## Races / Subtypes
+### 6.2 Races / Subtypes
 
 | Category | Race | Resist | Weak |
 |--------|------|--------|------|
@@ -192,234 +277,234 @@ No responsibility overlaps.
 | Plant | Treant | Piercing | Fire |
 | Magical | Fey | Magic | Iron |
 
-## Encounter Composition Rules
+---
 
-Encounter composition defines how enemies are grouped and spawned in combat.
-It determines difficulty, pacing, and tactical variety without modifying core stats.
+## 7. Encounter & Boss Design
+
+## 7. Encounter & Boss Design
+
+This section defines how enemies are grouped, how difficulty is expressed, and how bosses differ from normal encounters.
+Encounter and boss design focuses on **behavior, composition, and pacing**, not stat inflation.
 
 ---
 
-### Encounter Size
+### 7.1 Encounter Composition Rules
+
+Encounter composition determines how enemies are assembled into fights and how challenge is expressed.
+
+#### Encounter Size Categories
 
 | Encounter Type | Description |
 |---------------|-------------|
-| Solo          | Single enemy, often elite or boss. |
-| Small Pack    | 2–3 enemies, minimal synergy. |
+| Solo | Single enemy, often rare or epic. |
+| Small Pack | 2–3 enemies, limited synergy. |
 | Standard Pack | 4–6 enemies, mixed archetypes. |
-| Swarm         | Large number of weak enemies. |
-| Elite Group   | Few enemies with enhanced traits. |
-| Boss Encounter| One boss, often with supporting enemies. |
+| Swarm | Many weak enemies, high turnover. |
+| Rare Group | Fewer enemies with higher rarity. |
+| Boss Encounter | One boss with or without adds. |
 
 ---
 
-### Archetype Distribution Rules
+#### Archetype Distribution Rules
 
 - Each encounter has **one primary archetype**.
-- Secondary archetypes may appear depending on encounter size.
+- Secondary archetypes are chosen to support the primary role.
 - Swarm archetypes increase enemy count but reduce individual threat.
-- Tank archetypes rarely appear alone unless elite or boss-tier.
-- Boss encounters may contain **supporting minions**.
+- Tank archetypes rarely appear alone unless Rare or higher.
+- Assassin and Sniper archetypes favor mixed encounters.
 
 ---
 
-### Archetype Mixing Guidelines
+#### Archetype Mixing Guidelines
 
 | Primary Archetype | Allowed Secondary Archetypes |
-|-------------------|------------------------------|
-| Bruiser           | Skirmisher, Controller |
-| Skirmisher        | Swarm, Sniper |
-| Swarm             | Swarm, Controller |
-| Charger           | Skirmisher |
-| Sniper            | Tank, Controller |
-| Controller        | Bruiser, Swarm |
-| Tank              | Controller, Bruiser |
-| Assassin          | Skirmisher |
-| Boss              | Any (thematically consistent) |
+|------------------|-----------------------------|
+| Bruiser | Skirmisher, Controller |
+| Skirmisher | Swarm, Assassin |
+| Swarm | Swarm, Controller |
+| Charger | Skirmisher |
+| Sniper | Tank, Controller |
+| Controller | Bruiser, Swarm |
+| Tank | Controller, Bruiser |
+| Assassin | Skirmisher |
+| Boss | Any (theme-consistent) |
 
 ---
 
-### Biome Influence
+#### Biome Influence on Encounters
 
-- Biomes bias **race selection**, not archetypes.
-- Biome affixes may modify encounter composition.
-- Environmental encounters may replace enemies with hazards.
-- Certain archetypes may be rare or absent in specific biomes.
+- Biomes bias **race and enemy type**, not archetype.
+- Biome affixes may:
+  - increase encounter size
+  - replace enemies with hazards
+  - alter archetype availability
+- Environmental encounters may substitute enemies entirely.
 
 ---
 
-### Hierarchy & Faction Rules
+#### Hierarchy & Faction Rules
 
-- Hierarchical enemies spawn in **role-appropriate ratios**.
-  - Example: Ant Worker > Ant Soldier > Ant Guard > Ant Queen
-- Queens, Broodmothers, and Leaders spawn with followers.
-- Killing leaders may weaken or disperse remaining enemies.
+- Hierarchical enemies spawn in role-appropriate ratios.
+- Leaders and queens spawn with followers.
+- Killing a leader may:
+  - weaken remaining enemies
+  - stop reinforcements
+  - remove buffs
 - Faction enemies prefer spawning together.
 
 ---
 
-### Elite & Boss Composition
+#### Difficulty Scaling Axes
 
-- Elite enemies replace a standard enemy in a pack.
-- Elite groups reduce enemy count but increase threat.
-- Boss encounters may:
-  - Spawn waves
-  - Change composition mid-fight
-  - Summon archetype-specific minions
-- Bosses should never rely solely on raw HP.
-
----
-
-### Difficulty Scaling Axes
-
-Encounter difficulty scales by:
+Encounter difficulty scales via:
 - Enemy count
+- Rarity distribution
 - Archetype complexity
 - Prefix count
 - Status effect frequency
 - Biome affixes
 
-Avoid scaling primarily through HP inflation.
+Avoid scaling primarily through HP.
 
 ---
 
-### Anti-Frustration Rules (Important for AutoRPG)
+#### Anti-Frustration Rules (AutoRPG-Focused)
 
-- Avoid stacking multiple control-heavy archetypes in early game.
-- Do not combine more than one high-tempo modifier per encounter.
-- Long-duration control effects are limited on bosses.
-- Swarm encounters should resolve quickly.
+- Early encounters avoid stacking multiple control archetypes.
+- Only one high-tempo modifier per encounter.
+- Swarm encounters resolve quickly.
+- Encounters should clearly telegraph danger.
 
 ---
 
-### Encounter Identity Principle
+#### Encounter Identity Principle
 
-Each encounter should teach or reinforce **one concept**, such as:
+Each encounter should reinforce **one primary concept**, such as:
 - Armor interaction
 - Status effects
 - Speed vs durability
-- Crowd control
 - Burst windows
+- Crowd control
 
-Encounters should not test everything at once.
-
-## Boss Phase Rules
-
-Bosses are multi-phase encounters designed to change behavior, not just durability.
-Phases introduce new mechanics, reinforce encounter identity, and create pacing.
+Encounters should not test all systems at once.
 
 ---
 
-### Phase Triggers
+### 7.2 Boss Phase Rules
+
+Bosses are **multi-phase encounters** designed around changing behavior rather than extreme durability.
+
+---
+
+#### Phase Triggers
 
 | Trigger Type | Description |
 |-------------|-------------|
-| Health Threshold | Phase changes at specific HP percentages. |
-| Time-Based | Phase changes after a fixed duration. |
-| Event-Based | Phase changes when a condition is met (adds killed, shield broken). |
-| Resource-Based | Phase changes when boss energy or stacks reach a limit. |
+| Health Threshold | Phase change at HP percentages. |
+| Time-Based | Phase change after duration. |
+| Event-Based | Triggered by actions or conditions. |
+| Resource-Based | Triggered by stacks or energy. |
 
-Bosses may use **multiple trigger types** across phases.
+Bosses may use multiple trigger types.
 
 ---
 
-### Phase Structure
+#### Phase Structure Types
 
 | Phase Type | Purpose |
 |-----------|---------|
-| Introduction | Establishes boss identity and core mechanics. |
-| Escalation | Increases pressure via speed, damage, or mechanics. |
-| Control Phase | Focus on debuffs, terrain, or crowd control. |
-| Summoning Phase | Introduces adds or environmental threats. |
-| Burn Phase | Short, high-intensity window encouraging burst damage. |
-| Desperation | Final phase with high risk and limited duration. |
+| Introduction | Establishes boss identity. |
+| Escalation | Increases pressure or tempo. |
+| Control Phase | Focus on debuffs or terrain. |
+| Summoning Phase | Introduces adds or hazards. |
+| Burn Phase | Short burst-damage window. |
+| Desperation | Final high-risk phase. |
 
 Not all bosses require all phase types.
 
 ---
 
-### Phase Changes (What Can Change)
+#### Phase Changes
 
-During a phase transition, a boss may change:
-
-- Archetype (e.g. Tank → Bruiser)
+A phase transition may alter:
+- Archetype
 - Preferred skills
-- Support prefixes
+- Active prefixes
 - Status resistances
 - Movement behavior
-- Encounter composition (adds, hazards)
+- Encounter composition
 
-Phase changes should **always be visible or telegraphed**.
+Phase changes must be **telegraphed**.
 
 ---
 
-### Phase Modifiers
+#### Phase Modifiers
 
-| Modifier Type | Effect |
-|--------------|--------|
+| Modifier | Effect |
+|--------|--------|
 | Empowered | Increased damage or speed. |
-| Shielded | Temporary damage reduction or immunity. |
-| Enraged | Attack speed increases over time. |
-| Unstable | Periodic area effects or self-damage. |
+| Shielded | Temporary damage mitigation. |
+| Enraged | Speed increases over time. |
+| Unstable | Periodic area effects. |
 | Commanding | Buffs allied enemies. |
-| Corrupted | Applies exotic status effects more frequently. |
+| Corrupted | Applies exotic statuses more often. |
 
-Phase modifiers replace or override previous ones — they do not stack infinitely.
+Phase modifiers replace previous modifiers; they do not stack infinitely.
 
 ---
 
-### Add & Summon Rules
+#### Add & Summon Rules
 
-- Summoned enemies follow standard encounter rules.
-- Add waves should reinforce boss mechanics (not distract).
+- Adds follow standard encounter rules.
+- Adds reinforce boss mechanics.
 - Killing adds may:
-  - Weaken the boss
-  - Delay the next phase
-  - Remove a buff or shield
-- Add density must decrease as fight duration increases.
+  - weaken the boss
+  - delay the next phase
+  - remove shields or buffs
+- Add density decreases over time.
 
 ---
 
-### Status Effect Rules for Bosses
+#### Status Effects on Bosses
 
-- Bosses are **never fully immune** to all status effects.
-- Control effects (Stun, Root) have reduced duration.
+- Bosses are never immune to all status effects.
+- Control effects have reduced duration.
 - DOT effects are effective but capped.
-- Exotic effects (Disease, Corruption) may be resisted per phase.
-
-Each boss should have **one clear status weakness**.
+- Each boss has at least **one clear status weakness**.
+- Status resistances may change per phase.
 
 ---
 
-### Phase Transition Rules
+#### Phase Transitions
 
-- Phase transitions grant brief immunity to control effects.
-- Ongoing DOTs persist unless explicitly cleansed.
+- Phase transitions grant brief control immunity.
+- DOT effects persist unless cleansed.
 - Cooldowns are not reset unless specified.
-- Phase changes may reposition the boss.
+- Boss repositioning may occur.
 
 Transitions should feel impactful but fair.
 
 ---
 
-### Difficulty & Scaling Rules
+#### Boss Difficulty Scaling
 
 Boss difficulty scales via:
 - Number of phases
 - Phase complexity
-- Prefix count per phase
+- Prefix selection per phase
 - Add behavior
 - Environmental hazards
 
-Avoid scaling bosses primarily via HP.
+Avoid scaling via HP inflation.
 
 ---
 
-### Boss Identity Principle
+#### Boss Identity Principle
 
-Each boss should test **one primary concept**, such as:
-- Sustained damage vs regeneration
-- Crowd control management
+Each boss should test **one primary mastery**, such as:
+- Sustained damage
 - Burst timing
+- Crowd control management
 - Add prioritization
 - Environmental awareness
 
@@ -427,127 +512,26 @@ Bosses should not test all systems at once.
 
 ---
 
-### Failure & Recovery Rules (AutoRPG-Friendly)
+#### Failure & Recovery (AutoRPG-Friendly)
 
-- Boss encounters allow partial progress.
+- Partial progress may be retained.
 - Phase checkpoints may be saved.
-- Wipes should teach, not punish excessively.
-- Repeated failures may reduce boss aggression slightly.
+- Repeated failures reduce aggression slightly.
+- Boss encounters should teach, not punish.
 
-## Rarities
-
-Rarity defines **impact, complexity, and reward**, not raw power.
-Rarities apply to **enemies, weapons, armor, and biomes**.
-Skills do not have rarities.
 
 ---
 
-### Rarity Levels
+## 8. Loot & Rewards
 
-| Rarity | Availability | Description |
-|-------|--------------|-------------|
-| Common | Frequent | Baseline entities with minimal modifiers. |
-| Uncommon | Occasional | Slightly enhanced entities with one modifier. |
-| Rare | Infrequent | Strong identity, multiple modifiers, higher rewards. |
-| Epic | Very Rare | Significant behavioral or environmental changes. |
-| Unique | Boss Only | Handcrafted, multi-phase, narrative-defining. |
+(see Loot & Reward Rules section you already approved)## 8. Loot & Rewards
+
+Loot and rewards define progression, build diversity, and long-term motivation.
+All rewards are governed by **rarity**, **biome**, and **entity identity**, not raw stats.
 
 ---
 
-## Enemy Rarity Effects
-
-| Rarity | Enemy Effects |
-|-------|---------------|
-| Common | Base archetype and race only. |
-| Uncommon | Gains **one support prefix** or enhanced behavior. |
-| Rare | Gains **two support prefixes** or altered archetype behavior. |
-| Epic | Gains **multiple prefixes**, may alter encounter rules. |
-| Unique | Multi-phase boss with unique mechanics. |
-
-### Enemy Rarity Rules
-- Rarity does not change base enemy type.
-- Higher rarity increases **mechanical complexity**, not just stats.
-- Epic enemies may override biome affixes.
-- Unique enemies ignore rarity caps and prefix limits.
-
----
-
-## Weapon Rarity Effects
-
-| Rarity | Weapon Effects |
-|-------|----------------|
-| Common | Base weapon behavior only. |
-| Uncommon | Minor quality improvement or single prefix interaction. |
-| Rare | Gains **one compatible support prefix**. |
-| Epic | Gains **two compatible prefixes** or a unique interaction. |
-| Unique | Boss-only weapons with unique effects. |
-
-### Weapon Rarity Rules
-- Rarity never changes weapon damage type or reach.
-- Prefix compatibility is enforced (e.g. no Rapid on Heavy-only weapons).
-- Unique weapons are not dropped randomly.
-
----
-
-## Armor Rarity Effects
-
-| Rarity | Armor Effects |
-|-------|---------------|
-| Common | Base armor behavior. |
-| Uncommon | Slight reduction of speed penalty or vulnerability. |
-| Rare | Gains conditional resistance or passive effect. |
-| Epic | Gains strong passive or interaction with status effects. |
-| Unique | Boss-only armor with unique mechanics. |
-
-### Armor Rarity Rules
-- Armor type still defines resistances and vulnerabilities.
-- Rarity enhances **how armor behaves**, not what it resists.
-- Epic armor may alter status duration or mitigation.
-
----
-
-## Biome Rarity Effects
-
-| Rarity | Biome Effects |
-|-------|----------------|
-| Common | Standard biome rules and affixes. |
-| Uncommon | One additional biome affix active. |
-| Rare | Stronger affixes or altered encounter composition. |
-| Epic | Biome-wide rule changes (environmental hazards, altered pacing). |
-| Unique | Boss arena with bespoke mechanics. |
-
-### Biome Rarity Rules
-- Biome rarity affects **encounter composition**, not enemy stats.
-- Epic biomes may restrict or amplify certain archetypes.
-- Unique biomes exist only for major bosses or story events.
-
----
-
-## Rarity Interaction Rules
-
-- Rarity effects are **additive**, not multiplicative.
-- Rarity never invalidates core mechanics.
-- Higher rarity increases **decision pressure**, not randomness.
-- Rarity complexity should be readable at a glance.
-- Only one **Epic** entity should appear per encounter.
-
----
-
-## Design Intent
-
-- Rarity = **depth**, not inflation
-- Complexity grows before power
-- Bosses feel special without breaking systems
-- Loot, enemies, and environments share the same language
-
-## Loot & Reward Rules
-
-Loot and rewards define progression, build variety, and long-term motivation.
-All rewards are governed by **rarity**, **biome**, and **enemy identity**.
-
----
-
-### Loot Categories
+### 8.1 Loot Categories
 
 | Category | Description |
 |---------|-------------|
@@ -560,46 +544,46 @@ All rewards are governed by **rarity**, **biome**, and **enemy identity**.
 
 ---
 
-### Loot Sources
+### 8.2 Loot Sources
 
 | Source | Primary Rewards |
 |------|-----------------|
-| Common Enemies | Materials, currency |
-| Uncommon Enemies | Materials, low-tier equipment |
-| Rare Enemies | Equipment, consumables |
-| Epic Enemies | High-quality equipment, relics |
-| Bosses (Unique) | Unique items, relics, progression unlocks |
-| Environment | Materials, biome-specific items |
-| Events | Consumables, rare materials |
+| Common Enemies | Materials, small currency amounts. |
+| Uncommon Enemies | Improved materials, chance for equipment. |
+| Rare Enemies | Equipment, consumables, rare materials. |
+| Epic Enemies | High-quality equipment, relic chance. |
+| Bosses (Unique) | Unique items, relics, progression unlocks. |
+| Environment | Biome-specific materials and items. |
+| Events | Consumables, rare materials, special rewards. |
 
 ---
 
-### Rarity-Based Loot Rules
+### 8.3 Rarity-Based Loot Behavior
 
 | Rarity | Loot Behavior |
 |-------|---------------|
-| Common | Basic materials, low-value currency |
-| Uncommon | Improved materials, chance for equipment |
-| Rare | Guaranteed equipment or relic chance |
-| Epic | Multiple rewards, high synergy potential |
-| Unique | Handcrafted loot, no random rolls |
+| Common | Basic materials and currency. |
+| Uncommon | Improved materials, chance for equipment. |
+| Rare | Guaranteed equipment or relic chance. |
+| Epic | Multiple rewards with strong synergies. |
+| Unique | Handcrafted, deterministic rewards. |
 
 ---
 
-### Enemy Loot Rules
+### 8.4 Enemy Loot Rules
 
 - Enemy rarity defines **loot complexity**, not quantity.
 - Enemies drop loot consistent with:
   - their race
-  - their armor material
+  - their armor type
   - their biome
 - Swarm enemies drop reduced loot individually.
-- Leaders and hierarchy units (e.g. Ant Queen) have enhanced drops.
-- Boss loot is deterministic and narrative-aligned.
+- Leaders and hierarchy units have enhanced drops.
+- Boss loot is deterministic and identity-driven.
 
 ---
 
-### Weapon & Armor Loot Rules
+### 8.5 Weapon & Armor Loot Rules
 
 - Dropped equipment inherits:
   - the enemy’s material
@@ -607,11 +591,12 @@ All rewards are governed by **rarity**, **biome**, and **enemy identity**.
 - Equipment rarity determines:
   - number of compatible prefixes
   - presence of passive effects
-- Skills are **never dropped** as loot.
+- Weapons and armor never drop with incompatible prefixes.
+- Skills are **never** dropped as loot.
 
 ---
 
-### Material Drop Rules
+### 8.6 Material Drop Rules
 
 - Materials drop based on:
   - biome identity
@@ -623,44 +608,59 @@ All rewards are governed by **rarity**, **biome**, and **enemy identity**.
 
 ---
 
-### Biome Reward Rules
+### 8.7 Biome Reward Rules
 
-- Each biome has preferred loot categories.
+- Each biome biases loot categories and materials.
 - Biome rarity influences:
   - material quality
-  - chance for relics
-  - environmental hazards yielding loot
+  - relic availability
+  - environmental loot density
 - Epic biomes may introduce biome-exclusive rewards.
 - Unique biomes guarantee unique rewards.
 
 ---
 
-### Boss & Unique Rewards
+### 8.8 Boss & Unique Rewards
 
 - Unique bosses drop:
   - unique weapons or armor
+  - relics
   - permanent progression unlocks
-  - world-state changes
 - Unique items:
   - do not roll random prefixes
   - may alter core rules
   - are not repeatable drops
-- Defeating a boss may unlock new biomes or rarities.
+- Defeating a boss may unlock:
+  - new biomes
+  - higher rarity tiers
+  - world-state changes
 
 ---
 
-### Anti-Frustration Rules
+### 8.9 Anti-Frustration Rules
 
-- Duplicate loot is converted to materials or currency.
-- Bad luck protection increases rarity chance over time.
-- Bosses always provide meaningful progress.
+- Duplicate loot is converted into materials or currency.
+- Bad-luck protection increases rarity odds over time.
+- Boss encounters always grant meaningful progress.
 - Loot clarity is prioritized over surprise.
 
 ---
 
-### Reward Philosophy
+### 8.10 Reward Philosophy
 
-- Rewards reinforce **player decisions**
-- Power growth is gradual and readable
-- Rarity adds depth, not randomness
-- Progression should feel inevitable, not lucky
+- Rewards reinforce **player decisions**, not luck.
+- Progression should feel steady and readable.
+- Rarity adds depth, not randomness.
+- Even failed runs contribute to long-term progress.
+
+---
+
+## Final Note
+
+This file defines **stable system interfaces**.
+New content should extend via:
+- new tables
+- new rows
+- new biomes
+
+Not by altering core rules.
