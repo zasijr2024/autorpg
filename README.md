@@ -161,3 +161,84 @@ All values are relative (no hard numbers) to keep the system scalable and easy t
 - Materials define **quality and progression**
 
 This system is designed for automated combat, procedural enemies, and scalable progression.
+
+## Status Effects
+
+| Status Effect | Damage Type | Effect | Stacking Rule | Duration Behavior | Notes |
+|---------------|------------|--------|----------------|-------------------|-------|
+| Poison        | Poison     | Deals damage over time. | Stacks in power | Refreshes duration | Core DOT, common on insects and venoms. |
+| Bleeding      | Physical   | Deals damage over time. | Stacks in power | Refreshes duration | Strong vs unarmored targets. |
+| Burning       | Fire       | Deals damage over time. | Does not stack | Refreshes duration | Strong vs organic targets, weak vs fire resist. |
+| Freezing      | Cold       | Slows attack and movement speed. | Does not stack | Refreshes duration | Can enable shatter mechanics later. |
+| Shocked       | Electricity| Chance to stun or interrupt actions. | Does not stack | Short duration | Strong control effect, rare. |
+| Corroded      | Acid       | Reduces armor effectiveness. | Stacks in duration | Refreshes duration | Synergizes with physical damage. |
+| Weakened      | Physical   | Reduces outgoing damage. | Does not stack | Refreshes duration | Defensive debuff, good for elites. |
+| Vulnerable    | Any        | Increases damage taken. | Does not stack | Short duration | Burst window enabler. |
+| Stunned       | Control    | Cannot act. | Does not stack | Very short duration | Bosses usually resistant or immune. |
+| Rooted        | Control    | Cannot move, can still attack. | Does not stack | Refreshes duration | Strong vs melee enemies. |
+
+### Status Effect Rules
+
+- Damage-over-time effects tick independently of attack speed.
+- Only one instance of non-stacking effects can be active at a time.
+- Bosses and elites may have partial or full resistance to control effects.
+- Status effects respect damage resistances and vulnerabilities.
+- Multiple different status effects can be active simultaneously.
+
+## Enemy Archetypes
+
+| Archetype     | Role Description | HP Profile | Speed Profile | Preferred Range | Preferred Skills | Common Prefixes |
+|---------------|------------------|------------|---------------|-----------------|------------------|-----------------|
+| Bruiser       | High-durability frontline fighter. | High | Slow | Short | Heavy Slam, Crushing Blow | Heavy, Armored |
+| Skirmisher    | Fast melee attacker relying on speed. | Normal | Fast | Short | Bite, Rapid Jab, Claw Swipe | Rapid, Bleeding |
+| Swarm         | Weak individual enemies attacking in numbers. | Low | Fast | Short | Rapid Jab, Bite | Infectious, Poisonous |
+| Charger       | High-damage initiator with burst attacks. | High | Normal | Short | Charge Attack | Savage, Vicious |
+| Sniper        | Long-range attacker with high accuracy. | Low | Slow | Long | Precise Strike, Stab | Precise, Vicious |
+| Controller    | Focuses on debuffs and crowd control. | Normal | Normal | Medium | Sweep Attack, Crushing Blow | Freezing, Shocking |
+| Tank          | Soaks damage and protects allies. | Very High | Very Slow | Short | Heavy Slam | Armored, Crushing |
+| Assassin      | High burst damage, low durability. | Low | Very Fast | Short | Precise Strike, Stab | Vicious, Rapid |
+| Caster (Future) | Ranged magical damage dealer. | Low | Slow | Long | Magic-based skills | Burning, Shocking |
+| Boss          | Unique enemy with multiple phases. | Very High | Variable | Variable | Multiple | Multiple |
+
+### Archetype Rules
+
+- Archetypes define behavior, not exact stats.
+- Enemies may belong to only one archetype by default.
+- Elites may combine an archetype with additional prefixes.
+- Bosses may switch archetypes between phases.
+- Archetypes influence target selection and skill priority.
+
+## Enemy Races / Subtypes
+
+> Races define **biological traits and resist tendencies**.  
+> Archetypes define **combat behavior**.  
+> Both are combined to form a complete enemy.
+
+| Category  | Race / Subtype | Trait Description | Typical Resistance | Typical Vulnerability |
+|-----------|----------------|-------------------|--------------------|-----------------------|
+| Humanoid  | Human          | Balanced and adaptable. | None | None |
+| Humanoid  | Elf            | Agile and precise. | Piercing | Crushing |
+| Humanoid  | Dwarf          | Sturdy and resilient. | Poison | Piercing |
+| Humanoid  | Orc            | Brutal and aggressive. | Slashing | Cold |
+| Humanoid  | Goblin         | Small and evasive. | None | Fire |
+| Animal    | Wolf           | Fast pack predator. | Cold | Fire |
+| Animal    | Bear           | Massive and durable. | Crushing | Electricity |
+| Animal    | Boar           | Tough charger. | Slashing | Poison |
+| Animal    | Deer           | Fast and fragile. | None | Piercing |
+| Insect    | Ant            | Armored swarm creature. | Slashing | Fire |
+| Insect    | Spider         | Venomous ambusher. | Poison | Fire |
+| Insect    | Bee            | Fast flying stinger. | None | Cold |
+| Plant     | Sapling        | Weak animated plant. | Piercing | Fire |
+| Plant     | Treant         | Ancient living wood. | Piercing | Fire |
+| Plant     | Fungus         | Spore-based organism. | Poison | Fire |
+| Undead (Future) | Skeleton | Bone-based undead. | Poison | Crushing |
+| Undead (Future) | Zombie   | Slow rotting corpse. | Poison | Fire |
+| Magical (Future) | Fey     | Ethereal forest beings. | Magic | Iron |
+
+### Race Rules
+
+- Races define biological resistances and vulnerabilities.
+- Races do not define skills or weapons directly.
+- Armor type may override or enhance racial resistances.
+- Archetype + Race + Weapon + Skill = complete enemy identity.
+- Bosses may ignore racial weaknesses.
