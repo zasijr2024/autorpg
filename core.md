@@ -434,3 +434,233 @@ Bosses should not test all systems at once.
 - Wipes should teach, not punish excessively.
 - Repeated failures may reduce boss aggression slightly.
 
+## Rarities
+
+Rarity defines **impact, complexity, and reward**, not raw power.
+Rarities apply to **enemies, weapons, armor, and biomes**.
+Skills do not have rarities.
+
+---
+
+### Rarity Levels
+
+| Rarity | Availability | Description |
+|-------|--------------|-------------|
+| Common | Frequent | Baseline entities with minimal modifiers. |
+| Uncommon | Occasional | Slightly enhanced entities with one modifier. |
+| Rare | Infrequent | Strong identity, multiple modifiers, higher rewards. |
+| Epic | Very Rare | Significant behavioral or environmental changes. |
+| Unique | Boss Only | Handcrafted, multi-phase, narrative-defining. |
+
+---
+
+## Enemy Rarity Effects
+
+| Rarity | Enemy Effects |
+|-------|---------------|
+| Common | Base archetype and race only. |
+| Uncommon | Gains **one support prefix** or enhanced behavior. |
+| Rare | Gains **two support prefixes** or altered archetype behavior. |
+| Epic | Gains **multiple prefixes**, may alter encounter rules. |
+| Unique | Multi-phase boss with unique mechanics. |
+
+### Enemy Rarity Rules
+- Rarity does not change base enemy type.
+- Higher rarity increases **mechanical complexity**, not just stats.
+- Epic enemies may override biome affixes.
+- Unique enemies ignore rarity caps and prefix limits.
+
+---
+
+## Weapon Rarity Effects
+
+| Rarity | Weapon Effects |
+|-------|----------------|
+| Common | Base weapon behavior only. |
+| Uncommon | Minor quality improvement or single prefix interaction. |
+| Rare | Gains **one compatible support prefix**. |
+| Epic | Gains **two compatible prefixes** or a unique interaction. |
+| Unique | Boss-only weapons with unique effects. |
+
+### Weapon Rarity Rules
+- Rarity never changes weapon damage type or reach.
+- Prefix compatibility is enforced (e.g. no Rapid on Heavy-only weapons).
+- Unique weapons are not dropped randomly.
+
+---
+
+## Armor Rarity Effects
+
+| Rarity | Armor Effects |
+|-------|---------------|
+| Common | Base armor behavior. |
+| Uncommon | Slight reduction of speed penalty or vulnerability. |
+| Rare | Gains conditional resistance or passive effect. |
+| Epic | Gains strong passive or interaction with status effects. |
+| Unique | Boss-only armor with unique mechanics. |
+
+### Armor Rarity Rules
+- Armor type still defines resistances and vulnerabilities.
+- Rarity enhances **how armor behaves**, not what it resists.
+- Epic armor may alter status duration or mitigation.
+
+---
+
+## Biome Rarity Effects
+
+| Rarity | Biome Effects |
+|-------|----------------|
+| Common | Standard biome rules and affixes. |
+| Uncommon | One additional biome affix active. |
+| Rare | Stronger affixes or altered encounter composition. |
+| Epic | Biome-wide rule changes (environmental hazards, altered pacing). |
+| Unique | Boss arena with bespoke mechanics. |
+
+### Biome Rarity Rules
+- Biome rarity affects **encounter composition**, not enemy stats.
+- Epic biomes may restrict or amplify certain archetypes.
+- Unique biomes exist only for major bosses or story events.
+
+---
+
+## Rarity Interaction Rules
+
+- Rarity effects are **additive**, not multiplicative.
+- Rarity never invalidates core mechanics.
+- Higher rarity increases **decision pressure**, not randomness.
+- Rarity complexity should be readable at a glance.
+- Only one **Epic** entity should appear per encounter.
+
+---
+
+## Design Intent
+
+- Rarity = **depth**, not inflation
+- Complexity grows before power
+- Bosses feel special without breaking systems
+- Loot, enemies, and environments share the same language
+
+## Loot & Reward Rules
+
+Loot and rewards define progression, build variety, and long-term motivation.
+All rewards are governed by **rarity**, **biome**, and **enemy identity**.
+
+---
+
+### Loot Categories
+
+| Category | Description |
+|---------|-------------|
+| Materials | Used for crafting, upgrading, and progression. |
+| Weapons | Equipable items defining damage profile and reach. |
+| Armor | Equipable items defining resistances and speed penalties. |
+| Consumables | Temporary effects or recovery items. |
+| Relics | Rare items with passive or rule-altering effects. |
+| Currency | Generic progression resource. |
+
+---
+
+### Loot Sources
+
+| Source | Primary Rewards |
+|------|-----------------|
+| Common Enemies | Materials, currency |
+| Uncommon Enemies | Materials, low-tier equipment |
+| Rare Enemies | Equipment, consumables |
+| Epic Enemies | High-quality equipment, relics |
+| Bosses (Unique) | Unique items, relics, progression unlocks |
+| Environment | Materials, biome-specific items |
+| Events | Consumables, rare materials |
+
+---
+
+### Rarity-Based Loot Rules
+
+| Rarity | Loot Behavior |
+|-------|---------------|
+| Common | Basic materials, low-value currency |
+| Uncommon | Improved materials, chance for equipment |
+| Rare | Guaranteed equipment or relic chance |
+| Epic | Multiple rewards, high synergy potential |
+| Unique | Handcrafted loot, no random rolls |
+
+---
+
+### Enemy Loot Rules
+
+- Enemy rarity defines **loot complexity**, not quantity.
+- Enemies drop loot consistent with:
+  - their race
+  - their armor material
+  - their biome
+- Swarm enemies drop reduced loot individually.
+- Leaders and hierarchy units (e.g. Ant Queen) have enhanced drops.
+- Boss loot is deterministic and narrative-aligned.
+
+---
+
+### Weapon & Armor Loot Rules
+
+- Dropped equipment inherits:
+  - the enemy’s material
+  - the enemy’s rarity
+- Equipment rarity determines:
+  - number of compatible prefixes
+  - presence of passive effects
+- Skills are **never dropped** as loot.
+
+---
+
+### Material Drop Rules
+
+- Materials drop based on:
+  - biome identity
+  - enemy armor type
+  - enemy race
+- Rare materials are biome-restricted.
+- Environmental harvesting favors materials over equipment.
+- Higher rarity enemies may drop refined materials.
+
+---
+
+### Biome Reward Rules
+
+- Each biome has preferred loot categories.
+- Biome rarity influences:
+  - material quality
+  - chance for relics
+  - environmental hazards yielding loot
+- Epic biomes may introduce biome-exclusive rewards.
+- Unique biomes guarantee unique rewards.
+
+---
+
+### Boss & Unique Rewards
+
+- Unique bosses drop:
+  - unique weapons or armor
+  - permanent progression unlocks
+  - world-state changes
+- Unique items:
+  - do not roll random prefixes
+  - may alter core rules
+  - are not repeatable drops
+- Defeating a boss may unlock new biomes or rarities.
+
+---
+
+### Anti-Frustration Rules
+
+- Duplicate loot is converted to materials or currency.
+- Bad luck protection increases rarity chance over time.
+- Bosses always provide meaningful progress.
+- Loot clarity is prioritized over surprise.
+
+---
+
+### Reward Philosophy
+
+- Rewards reinforce **player decisions**
+- Power growth is gradual and readable
+- Rarity adds depth, not randomness
+- Progression should feel inevitable, not lucky
