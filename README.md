@@ -95,3 +95,21 @@
 | Forest Spider     | Insect     | Normal    | Medium      | Mandible         | Chitin  | Precise Strike  |
 | Walking Sapling   | Plant      | Normal    | Medium      | Wooden Club      | Bark    | Crushing Blow  |
 | Ancient Treant   | Plant      | High      | Very Large  | Wooden Staff     | Bark    | Sweep Attack   |
+
+## Materials – Effects on Weapons and Armor
+
+| Material  | Weapon Effect | Armor Effect |
+|-----------|---------------|--------------|
+| Flesh / Skin | Very low damage, cannot crit | No protection, vulnerable to all damage |
+| Leather | Low damage, fast attacks | Light protection, minor pierce resist |
+| Bone | Normal damage, increased crit chance | Moderate protection, crushing weakness |
+| Wood | Normal damage, low armor penetration | Light protection, fire weakness |
+| Stone | High damage, slow attacks | High protection, crushing resist, very slow |
+| Copper | Normal damage, poor armor penetration | Light protection, electricity weakness |
+| Iron | High damage, reliable hits | Good protection, normal speed penalty |
+| Steel | High damage, increased crit damage | Strong protection, good balance |
+| Silver | Normal damage, bonus vs magical beings | Light protection, magic resist |
+| Gold | Low damage, very slow | Decorative only, no combat value |
+| Chitin | Normal damage, fast attacks | Slashing resist, fire weakness |
+| Mithril | High damage, fast attacks | Strong protection, minimal speed penalty |
+
