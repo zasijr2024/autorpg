@@ -191,3 +191,246 @@ No responsibility overlaps.
 | Insect | Spider | Poison | Fire |
 | Plant | Treant | Piercing | Fire |
 | Magical | Fey | Magic | Iron |
+
+## Encounter Composition Rules
+
+Encounter composition defines how enemies are grouped and spawned in combat.
+It determines difficulty, pacing, and tactical variety without modifying core stats.
+
+---
+
+### Encounter Size
+
+| Encounter Type | Description |
+|---------------|-------------|
+| Solo          | Single enemy, often elite or boss. |
+| Small Pack    | 2–3 enemies, minimal synergy. |
+| Standard Pack | 4–6 enemies, mixed archetypes. |
+| Swarm         | Large number of weak enemies. |
+| Elite Group   | Few enemies with enhanced traits. |
+| Boss Encounter| One boss, often with supporting enemies. |
+
+---
+
+### Archetype Distribution Rules
+
+- Each encounter has **one primary archetype**.
+- Secondary archetypes may appear depending on encounter size.
+- Swarm archetypes increase enemy count but reduce individual threat.
+- Tank archetypes rarely appear alone unless elite or boss-tier.
+- Boss encounters may contain **supporting minions**.
+
+---
+
+### Archetype Mixing Guidelines
+
+| Primary Archetype | Allowed Secondary Archetypes |
+|-------------------|------------------------------|
+| Bruiser           | Skirmisher, Controller |
+| Skirmisher        | Swarm, Sniper |
+| Swarm             | Swarm, Controller |
+| Charger           | Skirmisher |
+| Sniper            | Tank, Controller |
+| Controller        | Bruiser, Swarm |
+| Tank              | Controller, Bruiser |
+| Assassin          | Skirmisher |
+| Boss              | Any (thematically consistent) |
+
+---
+
+### Biome Influence
+
+- Biomes bias **race selection**, not archetypes.
+- Biome affixes may modify encounter composition.
+- Environmental encounters may replace enemies with hazards.
+- Certain archetypes may be rare or absent in specific biomes.
+
+---
+
+### Hierarchy & Faction Rules
+
+- Hierarchical enemies spawn in **role-appropriate ratios**.
+  - Example: Ant Worker > Ant Soldier > Ant Guard > Ant Queen
+- Queens, Broodmothers, and Leaders spawn with followers.
+- Killing leaders may weaken or disperse remaining enemies.
+- Faction enemies prefer spawning together.
+
+---
+
+### Elite & Boss Composition
+
+- Elite enemies replace a standard enemy in a pack.
+- Elite groups reduce enemy count but increase threat.
+- Boss encounters may:
+  - Spawn waves
+  - Change composition mid-fight
+  - Summon archetype-specific minions
+- Bosses should never rely solely on raw HP.
+
+---
+
+### Difficulty Scaling Axes
+
+Encounter difficulty scales by:
+- Enemy count
+- Archetype complexity
+- Prefix count
+- Status effect frequency
+- Biome affixes
+
+Avoid scaling primarily through HP inflation.
+
+---
+
+### Anti-Frustration Rules (Important for AutoRPG)
+
+- Avoid stacking multiple control-heavy archetypes in early game.
+- Do not combine more than one high-tempo modifier per encounter.
+- Long-duration control effects are limited on bosses.
+- Swarm encounters should resolve quickly.
+
+---
+
+### Encounter Identity Principle
+
+Each encounter should teach or reinforce **one concept**, such as:
+- Armor interaction
+- Status effects
+- Speed vs durability
+- Crowd control
+- Burst windows
+
+Encounters should not test everything at once.
+
+## Boss Phase Rules
+
+Bosses are multi-phase encounters designed to change behavior, not just durability.
+Phases introduce new mechanics, reinforce encounter identity, and create pacing.
+
+---
+
+### Phase Triggers
+
+| Trigger Type | Description |
+|-------------|-------------|
+| Health Threshold | Phase changes at specific HP percentages. |
+| Time-Based | Phase changes after a fixed duration. |
+| Event-Based | Phase changes when a condition is met (adds killed, shield broken). |
+| Resource-Based | Phase changes when boss energy or stacks reach a limit. |
+
+Bosses may use **multiple trigger types** across phases.
+
+---
+
+### Phase Structure
+
+| Phase Type | Purpose |
+|-----------|---------|
+| Introduction | Establishes boss identity and core mechanics. |
+| Escalation | Increases pressure via speed, damage, or mechanics. |
+| Control Phase | Focus on debuffs, terrain, or crowd control. |
+| Summoning Phase | Introduces adds or environmental threats. |
+| Burn Phase | Short, high-intensity window encouraging burst damage. |
+| Desperation | Final phase with high risk and limited duration. |
+
+Not all bosses require all phase types.
+
+---
+
+### Phase Changes (What Can Change)
+
+During a phase transition, a boss may change:
+
+- Archetype (e.g. Tank → Bruiser)
+- Preferred skills
+- Support prefixes
+- Status resistances
+- Movement behavior
+- Encounter composition (adds, hazards)
+
+Phase changes should **always be visible or telegraphed**.
+
+---
+
+### Phase Modifiers
+
+| Modifier Type | Effect |
+|--------------|--------|
+| Empowered | Increased damage or speed. |
+| Shielded | Temporary damage reduction or immunity. |
+| Enraged | Attack speed increases over time. |
+| Unstable | Periodic area effects or self-damage. |
+| Commanding | Buffs allied enemies. |
+| Corrupted | Applies exotic status effects more frequently. |
+
+Phase modifiers replace or override previous ones — they do not stack infinitely.
+
+---
+
+### Add & Summon Rules
+
+- Summoned enemies follow standard encounter rules.
+- Add waves should reinforce boss mechanics (not distract).
+- Killing adds may:
+  - Weaken the boss
+  - Delay the next phase
+  - Remove a buff or shield
+- Add density must decrease as fight duration increases.
+
+---
+
+### Status Effect Rules for Bosses
+
+- Bosses are **never fully immune** to all status effects.
+- Control effects (Stun, Root) have reduced duration.
+- DOT effects are effective but capped.
+- Exotic effects (Disease, Corruption) may be resisted per phase.
+
+Each boss should have **one clear status weakness**.
+
+---
+
+### Phase Transition Rules
+
+- Phase transitions grant brief immunity to control effects.
+- Ongoing DOTs persist unless explicitly cleansed.
+- Cooldowns are not reset unless specified.
+- Phase changes may reposition the boss.
+
+Transitions should feel impactful but fair.
+
+---
+
+### Difficulty & Scaling Rules
+
+Boss difficulty scales via:
+- Number of phases
+- Phase complexity
+- Prefix count per phase
+- Add behavior
+- Environmental hazards
+
+Avoid scaling bosses primarily via HP.
+
+---
+
+### Boss Identity Principle
+
+Each boss should test **one primary concept**, such as:
+- Sustained damage vs regeneration
+- Crowd control management
+- Burst timing
+- Add prioritization
+- Environmental awareness
+
+Bosses should not test all systems at once.
+
+---
+
+### Failure & Recovery Rules (AutoRPG-Friendly)
+
+- Boss encounters allow partial progress.
+- Phase checkpoints may be saved.
+- Wipes should teach, not punish excessively.
+- Repeated failures may reduce boss aggression slightly.
+
