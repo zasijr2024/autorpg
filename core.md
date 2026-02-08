@@ -381,6 +381,258 @@ The player may only equip **Wielded**, **Ranged**, or **Worn** labeled items.
 
 ---
 
+🔹 NEW SECTION: Combat Simulation Model
+## X. Combat Simulation Model
+
+This section defines how combat is simulated at runtime.
+It describes **time, action resolution, and state updates**.
+All combat systems rely on this model.
+
+---
+
+### X.1 Time & Tick Model
+
+Combat is simulated using a **tick-based continuous time model**.
+
+- Time advances in discrete ticks.
+- Each entity tracks its own next-action timestamp.
+- Actions occur when an entity’s timer reaches zero.
+- Multiple actions may resolve within the same tick.
+
+Ticks are a simulation unit, not a gameplay concept.
+
+---
+
+### X.2 Action Interval & Speed
+
+- Each attack skill defines a **base action interval**.
+- Speed modifiers adjust the interval, not damage.
+- Lower interval = more frequent actions.
+- Speed effects never change action order directly.
+
+This ensures speed scales **frequency**, not priority.
+
+---
+
+### X.3 Initiative Resolution
+
+- There is **no initiative roll**.
+- Initial action order is determined by:
+  1. Skill speed
+  2. Speed modifiers
+  3. Spawn timing
+- Faster entities act sooner but never skip others.
+
+This avoids RNG and ensures deterministic replay.
+
+---
+
+### X.4 Concurrent Actions
+
+- Multiple entities may act in the same tick.
+- Action resolution order within a tick is stable:
+  - player side resolves first
+  - then enemies
+- DOT ticks and passive effects resolve after actions.
+
+---
+
+### X.5 State Update Order
+
+Each tick resolves in the following order:
+
+1. Action execution
+2. Damage resolution
+3. Status application
+4. DOT ticks
+5. Death checks
+6. Phase / encounter transitions
+
+No step may be skipped.
+
+
+🔹 NEW SECTION: Target Selection Model
+## X. Target Selection Model
+
+Target selection defines how entities choose targets automatically.
+All targeting is **deterministic and rule-based**.
+
+---
+
+### X.1 Target Pools
+
+An entity may target:
+
+- nearest enemy
+- lowest HP enemy
+- highest threat enemy
+- priority-marked enemy
+- random valid enemy (rare)
+
+Target pools are restricted by reach and range.
+
+---
+
+### X.2 Default Targeting Priority
+
+Unless overridden, entities follow this priority:
+
+1. Valid targets in reach
+2. Lowest effective HP
+3. Highest threat
+4. Closest distance
+
+This ensures predictable AutoRPG behavior.
+
+---
+
+### X.3 Archetype-Based Targeting Overrides
+
+Archetypes may override default targeting:
+
+| Archetype | Target Preference |
+|----------|-------------------|
+| Tank | Highest threat |
+| Assassin | Lowest HP |
+| Sniper | Lowest armor |
+| Controller | Highest impact target |
+| Swarm | Random valid |
+
+Overrides do not break core rules.
+
+---
+
+### X.4 Boss Targeting Rules
+
+- Bosses may change targeting per phase.
+- Boss targeting is always telegraphed.
+- Bosses may temporarily ignore default priorities.
+
+Boss targeting exists to test mastery, not surprise.
+
+
+🔹 NEW SECTION: HP, Damage & Scale Model
+## X. HP, Damage & Scale Model
+
+This section defines how relative values map to simulation behavior.
+
+---
+
+### X.1 HP Bands
+
+HP is expressed in **relative bands**, not absolute values.
+
+| Band | Meaning |
+|-----|--------|
+| Very Low | Dies quickly |
+| Low | Fragile |
+| Normal | Baseline |
+| High | Durable |
+| Very High | Boss-tier |
+
+HP bands determine:
+- survivability
+- DOT relevance
+- fight duration
+
+---
+
+### X.2 Damage Bands
+
+Damage values use the same relative scale:
+
+| Damage | Expected Effect |
+|-------|-----------------|
+| Very Low | Chip damage |
+| Low | Gradual pressure |
+| Normal | Baseline |
+| High | Threatening |
+| Very High | Burst-capable |
+
+Damage bands interact with HP bands deterministically.
+
+---
+
+### X.3 Scaling Rules
+
+- HP and damage scale by **complexity**, not inflation.
+- Higher difficulty increases:
+  - enemy count
+  - rarity
+  - mechanics
+- Numeric scaling is secondary and bounded.
+
+---
+
+### X.4 DOT Scaling
+
+- DOT effects scale with target HP band.
+- DOTs remain relevant against high-HP targets.
+- DOT stacking rules prevent exponential growth.
+
+This preserves DOT viability in idle combat.
+
+
+🔹 NEW SECTION: Run Definition & Lifecycle
+## X. Run Definition & Lifecycle
+
+A run is a **single world traversal session**.
+
+---
+
+### X.1 Run Start
+
+A run begins when:
+- the player enters the world map
+- run-specific variables are initialized
+
+At run start:
+- run progression resets
+- equipment is initialized
+- world node generation occurs
+
+---
+
+### X.2 Run Progression
+
+During a run:
+- encounters are resolved sequentially
+- momentum and temporary bonuses accumulate
+- crafting bonuses may apply
+
+Runs are self-contained.
+
+---
+
+### X.3 Run End Conditions
+
+A run ends when:
+- the player is defeated
+- a run-ending boss is defeated
+- the player voluntarily exits
+
+---
+
+### X.4 Run End Resolution
+
+On run end:
+- meta progression is awarded
+- world state updates are applied
+- unlock progression persists
+- run-specific bonuses are discarded
+
+Failure always grants progress.
+
+---
+
+### X.5 Run Persistence
+
+- Runs may be paused and resumed.
+- Offline progress may advance simulation.
+- Run state is fully serializable.
+
+---
+
 ## 4. Modifiers & Effects
 
 ### 4.1 Support Prefixes
