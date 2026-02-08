@@ -27,32 +27,37 @@ All values are **relative**; no fixed numbers are used.
 3. Combat Building Blocks
    - Weapons
    - Attack Skills
-4. Modifiers & Effects
+4. Target Selection
+   - Target Pools
+   - Default Targeting Priority
+   - Archetype-Based Targeting Overrides
+   - Boss Targeting Rules
+5. Modifiers & Effects
    - Support Prefixes
    - Prefix Compatibility
    - Status Effects
-5. Defense & Materials
+6. Defense & Materials
    - Armor Types
    - Materials
-6. Entity Identity
+7. Entity Identity
    - Archetypes
    - Races / Subtypes
-7. Encounter & Boss Design
+8. Encounter & Boss Design
    - Encounter Composition Rules
    - Encounter Complexity Budget
    - Boss Phase Rules
-8. Loot & Rewards
-9. Player Entity
+9. Loot & Rewards
+10. Player Entity
    - Player Identity
    - Skill Acquisition
-10. Environmental Hazards
-11. Crafting & Upgrades
-12. Consumables
-13. Relics
-14. Player Progression
-15. World Map & Biome Flow
-16. Factions & World State
-17. Anti-Power-Creep & Design Philosophy
+11. Environmental Hazards
+12. Crafting & Upgrades
+13. Consumables
+14. Relics
+15. Player Progression
+16. World Map & Biome Flow
+17. Factions & World State
+18. Anti-Power-Creep & Design Philosophy
 
 ---
 
@@ -169,41 +174,60 @@ Health determines how much damage an entity can sustain before defeat.
 - "Low HP" (for Frenzied prefix, desperation phases) means **below 30% of maximum health**
 - Health does not scale with progression — durability improves through mitigation, not HP inflation
 
+**HP & Damage Band Interaction**
+- Damage bands interact with HP bands deterministically to set fight duration expectations:
+  - Normal damage vs Normal HP = baseline fight length
+  - High damage vs Fragile HP = instant kill territory
+  - Very Low damage vs Massive HP = chip damage, DOT-dependent
+- DOT effects **scale with target HP band** to remain relevant against high-HP targets
+- DOT stacking rules prevent exponential growth but preserve DOT viability in idle combat
+- HP and damage scale by **complexity**, not inflation — numeric scaling is secondary and bounded
+
 ### Simulation Model
 
-AutoRPG combat is **tick-based**.
+AutoRPG combat is simulated using a **tick-based continuous time model**.
 
-- Each combat encounter runs as a sequence of **ticks**
-- On each tick, all entities attempt to act based on their current speed
-- Speed determines **action frequency**: higher speed means more actions per tick window
+- Time advances in discrete **ticks**; ticks are a simulation unit, not a gameplay concept
+- Each entity tracks its own **next-action timestamp** based on its action interval
+- Actions occur when an entity's timer reaches zero; multiple actions may resolve within the same tick
+- Speed determines **action frequency** (interval between actions):
   - Very Slow: acts every 5 ticks
   - Slow: acts every 4 ticks
   - Normal: acts every 3 ticks
   - Fast: acts every 2 ticks
   - Very Fast: acts every tick
+- Speed modifiers adjust the **interval**, not damage — speed scales frequency, not priority
 - DOT effects tick once per tick, independent of action speed
 - Status effect durations count down per tick
 - The simulation runs automatically; player input is limited to **preparation and loadout decisions**
+- There is **no initiative roll** — initial action order is determined by skill speed, speed modifiers, and spawn timing
+- Combat is fully **deterministic**: identical inputs produce identical outputs, enabling reliable replay
 
 ### Encounter Resolution Flow
 
-Within each tick, actions resolve in this order:
+Each tick resolves in this order:
 
-1. **DOT & Status tick** — All active DOTs deal damage; status durations decrement; expired statuses are removed
-2. **Hazard tick** — Environmental hazards trigger if conditions are met
-3. **Action phase** — All entities eligible to act this tick resolve actions in priority order:
-   - Priority is determined by **speed tier** (faster acts first)
+1. **Action execution** — All entities whose action timer reaches zero this tick resolve their actions:
+   - Player-side entities resolve first
+   - Then enemy entities resolve
+   - Within each side, faster entities act before slower ones
    - Ties within the same speed tier are broken by **reach** (longer reach acts first)
-   - Remaining ties are broken randomly
-4. **Death check** — Entities at 0 HP are removed from combat
-5. **Phase check** — Boss phase triggers are evaluated
-6. **Reinforcement check** — Summoned adds or reinforcements enter combat
+   - Remaining ties are broken by spawn order
+2. **Damage resolution** — All pending damage is applied
+3. **Status application** — New status effects from this tick's actions are applied
+4. **DOT & Status tick** — All active DOTs deal damage; status durations decrement; expired statuses are removed
+5. **Hazard tick** — Environmental hazards trigger if conditions are met
+6. **Death check** — Entities at 0 HP are removed from combat; death-triggered effects resolve
+7. **Phase check** — Boss phase triggers are evaluated
+8. **Reinforcement check** — Summoned adds or reinforcements enter combat
+
+No step may be skipped.
 
 ### Death & Defeat
 
 **Enemy death:**
 - Enemies reduced to 0 HP are immediately removed
-- Loot is generated on death per loot rules (Section 8)
+- Loot is generated on death per loot rules (Section 9)
 - Death-triggered effects (e.g., Spore Burst hazard) resolve before removal
 
 **Player defeat:**
@@ -219,27 +243,44 @@ Within each tick, actions resolve in this order:
   - World State persists
 
 **Boss defeat recovery:**
-- Failed boss attempts retain partial progress (see Section 7.2)
+- Failed boss attempts retain partial progress (see Section 8.3)
 - Repeated failures reduce boss aggression slightly
 
 ### Run Structure
 
-A **run** is a single expedition through connected biome nodes on the world map.
+A **run** is a single world traversal session through connected biome nodes on the world map.
 
+**Run Start:**
 - A run begins when the player enters the world map
-- A run ends when:
-  - the player defeats a final boss
-  - the player retreats voluntarily
-  - the player is defeated at a critical node
-- During a run:
-  - **Run Progression** accumulates and resets at run end
-  - **Meta Progression** accumulates permanently
-  - **Unlock Progression** triggers permanently when conditions are met
-  - **World State** changes take effect immediately and persist
-- Between runs:
-  - Equipment and consumables may be retained (biome-dependent)
-  - Relics always persist
-  - Crafting and upgrades are available
+- Run-specific variables are initialized (momentum, temporary bonuses)
+- Equipment is initialized from persistent inventory
+- World node generation occurs based on World State
+
+**During a Run:**
+- Encounters are resolved sequentially within each biome node
+- **Run Progression** accumulates (momentum, temporary bonuses)
+- **Meta Progression** accumulates permanently
+- **Unlock Progression** triggers permanently when conditions are met
+- **World State** changes take effect immediately and persist
+- Crafting bonuses may apply during the run
+
+**Run End Conditions:**
+- The player defeats a run-ending boss
+- The player retreats voluntarily
+- The player is defeated at a critical node
+
+**Run End Resolution:**
+- Meta progression is awarded
+- World State updates are applied
+- Unlock progression persists
+- Run-specific bonuses are discarded
+- Failure always grants progress
+
+**Run Persistence:**
+- Runs may be paused and resumed
+- Offline progress may advance the simulation
+- Run state is fully serializable
+- Between runs: equipment and consumables may be retained (biome-dependent); relics always persist; crafting and upgrades are available
 
 ### Equipment Slots
 
@@ -381,85 +422,14 @@ The player may only equip **Wielded**, **Ranged**, or **Worn** labeled items.
 
 ---
 
-🔹 NEW SECTION: Combat Simulation Model
-## X. Combat Simulation Model
-
-This section defines how combat is simulated at runtime.
-It describes **time, action resolution, and state updates**.
-All combat systems rely on this model.
-
----
-
-### X.1 Time & Tick Model
-
-Combat is simulated using a **tick-based continuous time model**.
-
-- Time advances in discrete ticks.
-- Each entity tracks its own next-action timestamp.
-- Actions occur when an entity’s timer reaches zero.
-- Multiple actions may resolve within the same tick.
-
-Ticks are a simulation unit, not a gameplay concept.
-
----
-
-### X.2 Action Interval & Speed
-
-- Each attack skill defines a **base action interval**.
-- Speed modifiers adjust the interval, not damage.
-- Lower interval = more frequent actions.
-- Speed effects never change action order directly.
-
-This ensures speed scales **frequency**, not priority.
-
----
-
-### X.3 Initiative Resolution
-
-- There is **no initiative roll**.
-- Initial action order is determined by:
-  1. Skill speed
-  2. Speed modifiers
-  3. Spawn timing
-- Faster entities act sooner but never skip others.
-
-This avoids RNG and ensures deterministic replay.
-
----
-
-### X.4 Concurrent Actions
-
-- Multiple entities may act in the same tick.
-- Action resolution order within a tick is stable:
-  - player side resolves first
-  - then enemies
-- DOT ticks and passive effects resolve after actions.
-
----
-
-### X.5 State Update Order
-
-Each tick resolves in the following order:
-
-1. Action execution
-2. Damage resolution
-3. Status application
-4. DOT ticks
-5. Death checks
-6. Phase / encounter transitions
-
-No step may be skipped.
-
-
-🔹 NEW SECTION: Target Selection Model
-## X. Target Selection Model
+## 4. Target Selection
 
 Target selection defines how entities choose targets automatically.
 All targeting is **deterministic and rule-based**.
 
 ---
 
-### X.1 Target Pools
+### 4.1 Target Pools
 
 An entity may target:
 
@@ -473,7 +443,7 @@ Target pools are restricted by reach and range.
 
 ---
 
-### X.2 Default Targeting Priority
+### 4.2 Default Targeting Priority
 
 Unless overridden, entities follow this priority:
 
@@ -486,7 +456,7 @@ This ensures predictable AutoRPG behavior.
 
 ---
 
-### X.3 Archetype-Based Targeting Overrides
+### 4.3 Archetype-Based Targeting Overrides
 
 Archetypes may override default targeting:
 
@@ -502,7 +472,7 @@ Overrides do not break core rules.
 
 ---
 
-### X.4 Boss Targeting Rules
+### 4.4 Boss Targeting Rules
 
 - Bosses may change targeting per phase.
 - Boss targeting is always telegraphed.
@@ -510,132 +480,11 @@ Overrides do not break core rules.
 
 Boss targeting exists to test mastery, not surprise.
 
-
-🔹 NEW SECTION: HP, Damage & Scale Model
-## X. HP, Damage & Scale Model
-
-This section defines how relative values map to simulation behavior.
-
 ---
 
-### X.1 HP Bands
+## 5. Modifiers & Effects
 
-HP is expressed in **relative bands**, not absolute values.
-
-| Band | Meaning |
-|-----|--------|
-| Very Low | Dies quickly |
-| Low | Fragile |
-| Normal | Baseline |
-| High | Durable |
-| Very High | Boss-tier |
-
-HP bands determine:
-- survivability
-- DOT relevance
-- fight duration
-
----
-
-### X.2 Damage Bands
-
-Damage values use the same relative scale:
-
-| Damage | Expected Effect |
-|-------|-----------------|
-| Very Low | Chip damage |
-| Low | Gradual pressure |
-| Normal | Baseline |
-| High | Threatening |
-| Very High | Burst-capable |
-
-Damage bands interact with HP bands deterministically.
-
----
-
-### X.3 Scaling Rules
-
-- HP and damage scale by **complexity**, not inflation.
-- Higher difficulty increases:
-  - enemy count
-  - rarity
-  - mechanics
-- Numeric scaling is secondary and bounded.
-
----
-
-### X.4 DOT Scaling
-
-- DOT effects scale with target HP band.
-- DOTs remain relevant against high-HP targets.
-- DOT stacking rules prevent exponential growth.
-
-This preserves DOT viability in idle combat.
-
-
-🔹 NEW SECTION: Run Definition & Lifecycle
-## X. Run Definition & Lifecycle
-
-A run is a **single world traversal session**.
-
----
-
-### X.1 Run Start
-
-A run begins when:
-- the player enters the world map
-- run-specific variables are initialized
-
-At run start:
-- run progression resets
-- equipment is initialized
-- world node generation occurs
-
----
-
-### X.2 Run Progression
-
-During a run:
-- encounters are resolved sequentially
-- momentum and temporary bonuses accumulate
-- crafting bonuses may apply
-
-Runs are self-contained.
-
----
-
-### X.3 Run End Conditions
-
-A run ends when:
-- the player is defeated
-- a run-ending boss is defeated
-- the player voluntarily exits
-
----
-
-### X.4 Run End Resolution
-
-On run end:
-- meta progression is awarded
-- world state updates are applied
-- unlock progression persists
-- run-specific bonuses are discarded
-
-Failure always grants progress.
-
----
-
-### X.5 Run Persistence
-
-- Runs may be paused and resumed.
-- Offline progress may advance simulation.
-- Run state is fully serializable.
-
----
-
-## 4. Modifiers & Effects
-
-### 4.1 Support Prefixes
+### 5.1 Support Prefixes
 
 | Prefix | Effect |
 |------|--------|
@@ -666,7 +515,7 @@ Failure always grants progress.
 
 ---
 
-### 4.2 Prefix Compatibility
+### 5.2 Prefix Compatibility
 
 Not all prefixes are valid on all items. Compatibility is governed by damage type and label.
 
@@ -688,7 +537,7 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-### 4.3 Status Effects
+### 5.3 Status Effects
 
 | Status | Type | Effect | Stacking |
 |------|------|--------|----------|
@@ -706,9 +555,9 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-## 5. Defense & Materials
+## 6. Defense & Materials
 
-### 5.1 Armor Types
+### 6.1 Armor Types
 
 | Armor | Label | Speed | Resist | Weak |
 |------|-------|-------|--------|------|
@@ -727,7 +576,7 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-### 5.2 Materials
+### 6.2 Materials
 
 | Material | Weapon Effect | Armor Effect |
 |--------|---------------|--------------|
@@ -746,9 +595,9 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-## 6. Entity Identity
+## 7. Entity Identity
 
-### 6.1 Archetypes
+### 7.1 Archetypes
 
 | Archetype | Role | Health |
 |----------|------|--------|
@@ -764,7 +613,7 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-### 6.2 Races / Subtypes
+### 7.2 Races / Subtypes
 
 | Category | Race | Resist | Weak |
 |--------|------|--------|------|
@@ -780,14 +629,14 @@ Not all prefixes are valid on all items. Compatibility is governed by damage typ
 
 ---
 
-## 7. Encounter & Boss Design
+## 8. Encounter & Boss Design
 
 This section defines how enemies are grouped, how difficulty is expressed, and how bosses differ from normal encounters.
 Encounter and boss design focuses on **behavior, composition, and pacing**, not stat inflation.
 
 ---
 
-### 7.1 Encounter Composition Rules
+### 8.1 Encounter Composition Rules
 
 Encounter composition determines how enemies are assembled into fights and how challenge is expressed.
 
@@ -850,7 +699,7 @@ Encounter composition determines how enemies are assembled into fights and how c
   - stop reinforcements
   - remove buffs
 - Faction enemies prefer spawning together.
-- Faction presence may add **faction auras** to encounters (see Section 16).
+- Faction presence may add **faction auras** to encounters (see Section 17).
 
 ---
 
@@ -890,7 +739,7 @@ Encounters should not test all systems at once.
 
 ---
 
-### 7.2 Encounter Complexity Budget
+### 8.2 Encounter Complexity Budget
 
 Each encounter has a **complexity budget** that caps the number of simultaneous mechanics.
 
@@ -911,7 +760,7 @@ Each encounter has a **complexity budget** that caps the number of simultaneous 
 
 ---
 
-### 7.3 Boss Phase Rules
+### 8.3 Boss Phase Rules
 
 Bosses are **multi-phase encounters** designed around changing behavior rather than extreme durability.
 
@@ -1043,14 +892,14 @@ Bosses should not test all systems at once.
 
 ---
 
-## 8. Loot & Rewards
+## 9. Loot & Rewards
 
 Loot and rewards define progression, build diversity, and long-term motivation.
 All rewards are governed by **rarity**, **biome**, and **entity identity**, not raw stats.
 
 ---
 
-### 8.1 Loot Categories
+### 9.1 Loot Categories
 
 | Category | Description |
 |---------|-------------|
@@ -1063,7 +912,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.2 Loot Sources
+### 9.2 Loot Sources
 
 | Source | Primary Rewards |
 |------|-----------------|
@@ -1077,7 +926,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.3 Rarity-Based Loot Behavior
+### 9.3 Rarity-Based Loot Behavior
 
 | Rarity | Loot Behavior |
 |-------|---------------|
@@ -1089,7 +938,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.4 Enemy Loot Rules
+### 9.4 Enemy Loot Rules
 
 - Enemy rarity defines **loot complexity**, not quantity.
 - Enemies drop loot consistent with:
@@ -1102,7 +951,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.5 Weapon & Armor Loot Rules
+### 9.5 Weapon & Armor Loot Rules
 
 - Dropped equipment inherits:
   - the enemy's material
@@ -1110,12 +959,12 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 - Equipment rarity determines:
   - number of compatible prefixes
   - presence of passive effects
-- Weapons and armor never drop with incompatible prefixes (see Section 4.2).
+- Weapons and armor never drop with incompatible prefixes (see Section 5.2).
 - Skills are **never** dropped as loot.
 
 ---
 
-### 8.6 Material Drop Rules
+### 9.6 Material Drop Rules
 
 - Materials drop based on:
   - biome identity
@@ -1127,7 +976,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.7 Biome Reward Rules
+### 9.7 Biome Reward Rules
 
 - Each biome biases loot categories and materials.
 - Biome rarity influences:
@@ -1139,7 +988,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.8 Boss & Unique Rewards
+### 9.8 Boss & Unique Rewards
 
 - Unique bosses drop:
   - unique weapons or armor
@@ -1156,7 +1005,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.9 Anti-Frustration Rules
+### 9.9 Anti-Frustration Rules
 
 - Duplicate loot is converted into materials or currency.
 - Bad-luck protection increases rarity odds over time.
@@ -1165,7 +1014,7 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-### 8.10 Reward Philosophy
+### 9.10 Reward Philosophy
 
 - Rewards reinforce **player decisions**, not luck.
 - Progression should feel steady and readable.
@@ -1174,13 +1023,13 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 
 ---
 
-## 9. Player Entity
+## 10. Player Entity
 
 The player is an entity governed by the same systems as enemies. The player does not receive special exemptions from combat rules.
 
 ---
 
-### 9.1 Player Identity
+### 10.1 Player Identity
 
 | Property | Rule |
 |---------|------|
@@ -1193,7 +1042,7 @@ The player is an entity governed by the same systems as enemies. The player does
 
 ---
 
-### 9.2 Skill Acquisition
+### 10.2 Skill Acquisition
 
 - The player begins with **one basic attack skill**
 - New skills are acquired through:
@@ -1206,13 +1055,13 @@ The player is an entity governed by the same systems as enemies. The player does
 
 ---
 
-## 10. Environmental Hazards
+## 11. Environmental Hazards
 
 Environmental hazards are non-entity threats that occupy encounters or biome zones. They use the status effect system but have no HP, armor, or loot.
 
 ---
 
-### 10.1 Hazard Properties
+### 11.1 Hazard Properties
 
 | Property | Description |
 |---------|-------------|
@@ -1223,7 +1072,7 @@ Environmental hazards are non-entity threats that occupy encounters or biome zon
 
 ---
 
-### 10.2 Hazard Interaction Rules
+### 11.2 Hazard Interaction Rules
 
 - Hazards apply effects using the standard damage resolution order
 - Armor and race resistances apply normally against hazard damage
@@ -1235,7 +1084,7 @@ Environmental hazards are non-entity threats that occupy encounters or biome zon
 
 ---
 
-### 10.3 Hazard Categories
+### 11.3 Hazard Categories
 
 | Category | Examples |
 |---------|----------|
@@ -1248,14 +1097,14 @@ Specific hazard instances are defined per biome.
 
 ---
 
-## 11. Crafting & Upgrades
+## 12. Crafting & Upgrades
 
 Crafting and upgrades convert loot into **agency and long-term progression**.
 They emphasize **choice, specialization, and reliability** over raw power inflation.
 
 ---
 
-### 11.1 Crafting Philosophy
+### 12.1 Crafting Philosophy
 
 - Crafting improves **consistency before magnitude**
 - Crafting never invalidates loot drops
@@ -1265,7 +1114,7 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.2 Crafting Categories
+### 12.2 Crafting Categories
 
 | Category | Purpose |
 |--------|---------|
@@ -1277,7 +1126,7 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.3 Crafting Actions
+### 12.3 Crafting Actions
 
 | Action | Input | Output |
 |--------|-------|--------|
@@ -1290,7 +1139,7 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.4 Material Usage Rules
+### 12.4 Material Usage Rules
 
 - Materials determine:
   - crafting eligibility
@@ -1302,7 +1151,7 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.5 Weapon Crafting Rules
+### 12.5 Weapon Crafting Rules
 
 - Crafted weapons must use valid:
   - weapon type
@@ -1319,7 +1168,7 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.6 Armor Crafting Rules
+### 12.6 Armor Crafting Rules
 
 - Crafted armor must use a valid armor type and label (Worn only)
 - Crafting cannot remove inherent vulnerabilities
@@ -1331,16 +1180,16 @@ They emphasize **choice, specialization, and reliability** over raw power inflat
 
 ---
 
-### 11.7 Prefix Imbuing Rules
+### 12.7 Prefix Imbuing Rules
 
-- Prefixes added via crafting must follow compatibility rules (Section 4.2)
+- Prefixes added via crafting must follow compatibility rules (Section 5.2)
 - Crafted prefixes count toward rarity prefix limits
 - Prefix removal or replacement is possible but costly
 - Unique items have fixed prefixes and cannot be re-imbued
 
 ---
 
-### 11.8 Upgrade Paths
+### 12.8 Upgrade Paths
 
 Upgrades are **branching**, not linear.
 
@@ -1358,7 +1207,7 @@ Upgrades are **branching**, not linear.
 
 ---
 
-### 11.9 Rarity & Crafting Interaction
+### 12.9 Rarity & Crafting Interaction
 
 - Crafting cannot exceed the item's maximum rarity
 - Crafted items cannot exceed the player's current biome tier
@@ -1369,9 +1218,9 @@ Upgrades are **branching**, not linear.
 
 ---
 
-### 11.10 Crafting Access & Progression
+### 12.10 Crafting Access & Progression
 
-- Crafting access is gated by **Unlock Progression** (Section 14)
+- Crafting access is gated by **Unlock Progression** (Section 15)
 - Meta progression improves crafting efficiency, not output
 - Run progression may grant temporary crafting bonuses
 - Crafting recipes are unlocked through:
@@ -1382,13 +1231,13 @@ Upgrades are **branching**, not linear.
 
 ---
 
-## 12. Consumables
+## 13. Consumables
 
 Consumables are single-use items that provide temporary effects.
 
 ---
 
-### 12.1 Consumable Categories
+### 13.1 Consumable Categories
 
 | Category | Effect Type | Duration |
 |---------|------------|----------|
@@ -1401,18 +1250,18 @@ Consumables are single-use items that provide temporary effects.
 
 ---
 
-### 12.2 Consumable Rules
+### 13.2 Consumable Rules
 
 - Consumables are acquired through loot, crafting, or environmental harvesting
 - Only one buff potion and one resistance elixir may be active at a time
 - Consumable rarity affects potency (duration, strength) not effect type
 - Consumables cannot replicate Unique item effects
-- Traps follow environmental hazard rules (Section 10)
+- Traps follow environmental hazard rules (Section 11)
 - Consumables are used before combat (loadout decision), not during
 
 ---
 
-## 13. Relics
+## 14. Relics
 
 Relics are rare, powerful artifacts that modify **rules, interactions, or priorities** rather than raw stats.
 They define long-term identity, enable unconventional builds, and introduce controlled rule-breaking.
@@ -1421,7 +1270,7 @@ Relics are never mandatory, but always meaningful.
 
 ---
 
-### 13.1 Relic Identity
+### 14.1 Relic Identity
 
 A relic is defined by:
 - a clear thematic concept
@@ -1432,7 +1281,7 @@ Relics do not replace weapons, armor, or skills.
 
 ---
 
-### 13.2 Relic Categories
+### 14.2 Relic Categories
 
 | Category | Purpose |
 |--------|---------|
@@ -1447,7 +1296,7 @@ A relic belongs to **one primary category**.
 
 ---
 
-### 13.3 Relic Rarity
+### 14.3 Relic Rarity
 
 | Rarity | Effect Scope |
 |--------|-------------|
@@ -1460,7 +1309,7 @@ A relic belongs to **one primary category**.
 
 ---
 
-### 13.4 Relic Power Model
+### 14.4 Relic Power Model
 
 - Relics modify **rules**, not numbers
 - Relics introduce **conditional advantages**
@@ -1471,10 +1320,10 @@ Relics should never simply be "always better".
 
 ---
 
-### 13.5 Relic Slots & Limits
+### 14.5 Relic Slots & Limits
 
 - The player starts with **1 relic slot**
-- Additional slots are unlocked via **Progression Axes** (Section 14), up to a maximum of **3**
+- Additional slots are unlocked via **Progression Axes** (Section 15), up to a maximum of **3**
 - Relics may compete for the same conceptual space
 - Some Epic or Unique relics may occupy **2 slots**
 
@@ -1482,7 +1331,7 @@ Relic limits prevent runaway complexity.
 
 ---
 
-### 13.6 Relic Interaction Rules
+### 14.6 Relic Interaction Rules
 
 - Relics may:
   - modify status stacking rules
@@ -1499,7 +1348,7 @@ Relic effects are explicit and readable.
 
 ---
 
-### 13.7 Relic Synergy & Conflict
+### 14.7 Relic Synergy & Conflict
 
 - Some relics synergize intentionally
 - Some relics conflict and cannot be equipped together
@@ -1510,7 +1359,7 @@ Relics should encourage **deliberate loadouts**.
 
 ---
 
-### 13.8 Relic Acquisition
+### 14.8 Relic Acquisition
 
 - Relics are acquired through:
   - boss defeats
@@ -1524,7 +1373,7 @@ Relics feel **earned**, not lucky.
 
 ---
 
-### 13.9 Relic Persistence & Evolution
+### 14.9 Relic Persistence & Evolution
 
 - Relics persist across runs
 - Relics are never destroyed
@@ -1538,14 +1387,14 @@ Relic loss should never feel punitive.
 
 ---
 
-## 14. Player Progression
+## 15. Player Progression
 
 Player progression defines how the player grows stronger, gains control, and unlocks complexity over time.
 Progression is split into **orthogonal axes** to avoid linear scaling, hard lock-ins, and power creep.
 
 ---
 
-### 14.1 Progression Layers
+### 15.1 Progression Layers
 
 Each progression axis belongs to exactly one layer.
 
@@ -1557,7 +1406,7 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-### 14.2 Meta Progression Axes
+### 15.2 Meta Progression Axes
 
 #### Axis 1: Combat Mastery
 **Layer:** Meta
@@ -1619,7 +1468,7 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-### 14.3 Run Progression Axes
+### 15.3 Run Progression Axes
 
 #### Axis 7: Equipment Growth
 **Layer:** Run
@@ -1651,7 +1500,7 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-### 14.4 Unlock Progression Axes
+### 15.4 Unlock Progression Axes
 
 #### Axis 10: System Unlocks
 **Layer:** Unlock
@@ -1693,7 +1542,7 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-### 14.5 Progression Interaction Rules
+### 15.5 Progression Interaction Rules
 
 - No single axis may dominate all builds
 - Progression effects are additive, not multiplicative
@@ -1703,7 +1552,7 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-### 14.6 Progression Philosophy
+### 15.6 Progression Philosophy
 
 - Progression should feel inevitable, not lucky
 - Failure still produces progress
@@ -1712,14 +1561,14 @@ Each progression axis belongs to exactly one layer.
 
 ---
 
-## 15. World Map & Biome Flow
+## 16. World Map & Biome Flow
 
 The world map defines **how biomes are arranged, unlocked, and traversed**.
 It controls pacing, difficulty escalation, and player choice without relying on linear progression.
 
 ---
 
-### 15.1 World Structure
+### 16.1 World Structure
 
 - The world is composed of interconnected **biome nodes**
 - Each node represents a biome instance with a defined rarity
@@ -1732,7 +1581,7 @@ The map is **semi-linear**:
 
 ---
 
-### 15.2 Biome Nodes
+### 16.2 Biome Nodes
 
 Each biome node is defined by:
 
@@ -1746,7 +1595,7 @@ Biome nodes are **generated per run**.
 
 ---
 
-### 15.3 Biome Rarity Distribution
+### 16.3 Biome Rarity Distribution
 
 | Biome Rarity | World Role |
 |-------------|------------|
@@ -1763,7 +1612,7 @@ Rules:
 
 ---
 
-### 15.4 Biome Connectivity Rules
+### 16.4 Biome Connectivity Rules
 
 - Biomes connect through visible paths
 - Paths indicate **risk vs reward**, not exact outcomes
@@ -1775,7 +1624,7 @@ Rules:
 
 ---
 
-### 15.5 Branching & Choice
+### 16.5 Branching & Choice
 
 - Players are frequently offered **meaningful choices**:
   - safer route vs risky route
@@ -1790,7 +1639,7 @@ No path is strictly optimal.
 
 ---
 
-### 15.6 Biome Sequencing Rules
+### 16.6 Biome Sequencing Rules
 
 - Early biomes favor:
   - Common and Uncommon rarity
@@ -1809,7 +1658,7 @@ Difficulty increases via **complexity**, not HP inflation.
 
 ---
 
-### 15.7 World Progression Gates
+### 16.7 World Progression Gates
 
 Progress through the world may be gated by:
 
@@ -1822,7 +1671,7 @@ Gates prevent premature exposure to overwhelming complexity.
 
 ---
 
-### 15.8 Boss Nodes
+### 16.8 Boss Nodes
 
 - Bosses occupy **Unique biome nodes**
 - Boss nodes:
@@ -1838,7 +1687,7 @@ Bosses represent **checkpoints**, not dead ends.
 
 ---
 
-### 15.9 World Events & Anomalies
+### 16.9 World Events & Anomalies
 
 - Some nodes may contain:
   - world events
@@ -1852,7 +1701,7 @@ Bosses represent **checkpoints**, not dead ends.
 
 ---
 
-### 15.10 Idle & AutoRPG Considerations
+### 16.10 Idle & AutoRPG Considerations
 
 - World traversal may continue automatically
 - Player choices set **intent**, not micro-actions
@@ -1861,7 +1710,7 @@ Bosses represent **checkpoints**, not dead ends.
 
 ---
 
-### 15.11 Anti-Frustration Rules
+### 16.11 Anti-Frustration Rules
 
 - No unavoidable dead ends
 - Retreat options exist before high-risk nodes
@@ -1870,7 +1719,7 @@ Bosses represent **checkpoints**, not dead ends.
 
 ---
 
-### 15.12 World Design Principle
+### 16.12 World Design Principle
 
 The world map exists to:
 - frame player choice
@@ -1882,7 +1731,7 @@ The map should feel **inviting, dangerous, and understandable**.
 
 ---
 
-## 16. Factions & World State
+## 17. Factions & World State
 
 Factions represent organized forces within the world.
 World State tracks how player actions permanently alter the world over time.
@@ -1891,7 +1740,7 @@ Together, they ensure the world feels **reactive, persistent, and alive**.
 
 ---
 
-### 16.1 Factions
+### 17.1 Factions
 
 A faction is a group with:
 - shared identity and goals
@@ -1903,7 +1752,7 @@ Factions are **systemic**, not purely narrative.
 
 ---
 
-### 16.2 Faction Characteristics
+### 17.2 Faction Characteristics
 
 Each faction defines:
 
@@ -1921,7 +1770,7 @@ Factions do not override core systems; they **bias** them.
 
 ---
 
-### 16.3 Faction Auras
+### 17.3 Faction Auras
 
 Faction auras are **passive combat effects** that apply to all faction-aligned enemies within an encounter. They make factions mechanically distinct during combat.
 
@@ -1942,7 +1791,7 @@ Faction auras are **passive combat effects** that apply to all faction-aligned e
 
 ---
 
-### 16.4 Example Faction Types
+### 17.4 Example Faction Types
 
 | Faction Type | Signature Prefix | Signature Status | Aura |
 |-------------|-----------------|-----------------|------|
@@ -1955,7 +1804,7 @@ Faction auras are **passive combat effects** that apply to all faction-aligned e
 
 ---
 
-### 16.5 Faction Presence & Influence
+### 17.5 Faction Presence & Influence
 
 - Factions exert influence over biome nodes
 - Influence affects:
@@ -1976,7 +1825,7 @@ Faction influence is **graded**, not binary:
 
 ---
 
-### 16.6 World State
+### 17.6 World State
 
 World State tracks persistent changes caused by player actions.
 
@@ -1984,7 +1833,7 @@ World State exists across runs but may evolve gradually.
 
 ---
 
-### 16.7 World State Variables
+### 17.7 World State Variables
 
 World State may include:
 
@@ -1997,7 +1846,7 @@ World State does not store moment-to-moment combat data.
 
 ---
 
-### 16.8 Faction Progression & Regression
+### 17.8 Faction Progression & Regression
 
 - Factions may:
   - expand into new biomes
@@ -2010,7 +1859,7 @@ Factions react, but do not require constant micromanagement.
 
 ---
 
-### 16.9 Player Interaction with Factions
+### 17.9 Player Interaction with Factions
 
 Players may interact with factions by:
 
@@ -2023,7 +1872,7 @@ Interactions are **implicit**, not dialog-driven.
 
 ---
 
-### 16.10 Faction Conflict
+### 17.10 Faction Conflict
 
 - Factions may conflict with each other
 - Conflicts may result in:
@@ -2037,7 +1886,7 @@ Faction conflict creates **dynamic world variation**.
 
 ---
 
-### 16.11 World Events & State Changes
+### 17.11 World Events & State Changes
 
 - Major actions may trigger world events:
   - biome invasions
@@ -2052,7 +1901,7 @@ Events are readable and telegraphed.
 
 ---
 
-### 16.12 Persistence & Reset Rules
+### 17.12 Persistence & Reset Rules
 
 - World State persists across runs
 - Some world elements may:
@@ -2065,7 +1914,7 @@ Persistence supports long-term goals without punishing failure.
 
 ---
 
-### 16.13 Idle & AutoRPG Considerations
+### 17.13 Idle & AutoRPG Considerations
 
 - Faction influence changes gradually
 - World State updates do not require constant player input
@@ -2074,7 +1923,7 @@ Persistence supports long-term goals without punishing failure.
 
 ---
 
-### 16.14 Anti-Frustration Rules
+### 17.14 Anti-Frustration Rules
 
 - No single faction may permanently block progression
 - World State changes are reversible over time
@@ -2083,7 +1932,7 @@ Persistence supports long-term goals without punishing failure.
 
 ---
 
-### 16.15 Faction & World State Design Principle
+### 17.15 Faction & World State Design Principle
 
 Factions and World State exist to:
 - create emergent stories
@@ -2095,13 +1944,13 @@ The world should feel **responsive, not reactive**.
 
 ---
 
-## 17. Anti-Power-Creep & Design Philosophy
+## 18. Anti-Power-Creep & Design Philosophy
 
 This section consolidates all balance constraints and design principles referenced throughout the document. These rules are **global** and take precedence over any individual system's rules.
 
 ---
 
-### 17.1 Core Balance Rules
+### 18.1 Core Balance Rules
 
 - Progression increases **consistency** before magnitude
 - Complexity unlocks before numeric scaling
@@ -2112,7 +1961,7 @@ This section consolidates all balance constraints and design principles referenc
 
 ---
 
-### 17.2 System Boundary Rules
+### 18.2 System Boundary Rules
 
 - Crafting never invalidates loot drops
 - Relics widen options before increasing strength
@@ -2123,7 +1972,7 @@ This section consolidates all balance constraints and design principles referenc
 
 ---
 
-### 17.3 Complexity Control
+### 18.3 Complexity Control
 
 - Complexity caps (Section 1) are hard limits and cannot be altered by any system
 - Encounters test **one primary concept**, not all systems at once
@@ -2132,7 +1981,7 @@ This section consolidates all balance constraints and design principles referenc
 
 ---
 
-### 17.4 Player Experience Principles
+### 18.4 Player Experience Principles
 
 - Progression should feel inevitable, not lucky
 - Failure still produces progress
@@ -2145,7 +1994,7 @@ This section consolidates all balance constraints and design principles referenc
 
 ---
 
-### 17.5 AutoRPG-Specific Principles
+### 18.5 AutoRPG-Specific Principles
 
 - The simulation runs automatically; player agency is in **preparation, not execution**
 - Systems must be **readable at a glance** — the player should understand why they won or lost
