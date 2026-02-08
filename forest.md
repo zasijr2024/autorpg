@@ -2,16 +2,38 @@
 
 ---
 
-## Biome Identity
+## Table of Contents
+
+1. Biome Identity
+2. Biome Affixes
+3. Forest-Specific Weapons
+4. Forest-Specific Skills
+5. Forest Enemy Roster
+   - Ant Colony Hierarchy
+   - Giant Forest Predators
+   - Plant & Wood Entities
+   - Forest Humanoids
+   - Forest Horrors
+   - Forest Fey
+   - Fungal Entities
+6. Encounter Templates
+7. Boss Phase Breakdowns
+8. Environmental Hazards
+9. Forest Materials & Loot Bias
+
+---
+
+## 1. Biome Identity
 
 - Dense terrain
 - High ambush frequency
 - Organic materials
 - Poison & control effects common
+- Primary material sources: Wood, Chitin, Bone, Leather
 
 ---
 
-## Biome Affixes
+## 2. Biome Affixes
 
 | Affix | Effect |
 |------|--------|
@@ -23,62 +45,415 @@
 
 ---
 
-## Forest Enemy Roster (Expanded)
+## 3. Forest-Specific Weapons
 
-### Ant Colony Hierarchy
+These weapons are defined for forest biome use and extend the core weapon table.
 
-| Enemy | Archetype | Weapon | Armor | Skill |
-|-----|-----------|--------|-------|-------|
-| Ant Worker | Swarm | Mandible | Chitin | Rapid Jab |
-| Ant Soldier | Bruiser | Ant Lance | Hardened Chitin | Impale |
-| Ant Guard | Tank | Mandible | Hardened Chitin | Heavy Slam |
-| Ant Spitter | Controller | Venom Spit | Chitin | Venom Spray |
-| Ant Queen | Boss | Queen Mandible | Hardened Chitin | Brood Command |
+| Weapon | Label | Damage | Type | Reach |
+|------|-------|--------|------|-------|
+| Ant Lance | Natural | High | Piercing | Medium |
+| Queen Mandible | Natural | High | Piercing | Short |
 
 ---
 
-### Giant Forest Predators
+## 4. Forest-Specific Skills
 
-| Enemy | Archetype | Weapon | Armor | Skill |
-|-----|-----------|--------|-------|-------|
-| Dire Squirrel | Assassin | Teeth | Fur | Frenzied Bite |
-| Giant Hedgehog | Tank | Spines | Hide | Rolling Slam |
-| Forest Lynx | Assassin | Claws | Fur | Precise Strike |
-| Dire Owl | Sniper | Talons | Feathers | Precise Strike |
-| Moss Bear | Bruiser | Paw | Mosshide | Heavy Slam |
+These skills are defined for forest biome use and extend the core skill table.
 
----
+| Skill | Damage | Hit | Speed | Crit |
+|------|--------|-----|-------|------|
+| Frenzied Bite | Normal | Normal | Very Fast | Normal |
+| Rolling Slam | High | Low | Slow | High |
+| Overhead Cleave | High | Normal | Slow | Normal |
+| Brood Command | None | — | Slow | None |
+| Infectious Bite | Normal | High | Normal | Low |
+| Corrosive Slam | Normal | Normal | Slow | Low |
 
-### Plant & Wood Entities
-
-| Enemy | Archetype | Weapon | Armor | Skill |
-|-----|-----------|--------|-------|-------|
-| Twigling | Swarm | Branch | Bark | Rapid Jab |
-| Thorn Creeper | Controller | Thorn Whip | Living Bark | Root Grasp |
-| Bark Guardian | Tank | Branch Halberd | Living Bark | Overhead Cleave |
-| Vine Horror | Bruiser | Root Slam | Living Bark | Crushing Blow |
-| Ancient Oakheart | Boss | Root Slam | Living Bark | Sweep Attack |
+**Skill Notes**
+- **Brood Command**: Summons Ant Workers; does not deal direct damage. Summon count scales with boss phase.
+- **Infectious Bite**: Applies Poison status on hit. If target is already Poisoned, applies Disease instead.
+- **Corrosive Slam**: Applies Corroded status on hit.
+- **Frenzied Bite**: Speed increases further at low HP (mirrors Frenzied prefix behavior).
 
 ---
 
-### Forest Humanoids
+## 5. Forest Enemy Roster
 
-| Enemy | Archetype | Weapon | Armor | Skill |
-|-----|-----------|--------|-------|-------|
-| Forest Poacher | Skirmisher | Wooden Spear | Leather | Stab |
-| Woodcut Raider | Bruiser | Wooden Axe | Hide | Heavy Slam |
-| Moss Druid | Controller | Wooden Staff | Mosshide | Root Grasp |
-| Bark Knight | Tank | Branch Halberd | Living Bark | Crushing Blow |
-| Greenwarden | Boss | Thorn Whip | Living Bark | Sweep Attack |
+All enemies list Race, Rarity range, Material, and compatible Prefixes alongside combat stats.
 
 ---
 
-### Forest Horrors
+### 5.1 Ant Colony Hierarchy
 
-| Enemy | Archetype | Weapon | Armor | Skill |
-|-----|-----------|--------|-------|-------|
-| Giant Spiderling | Swarm | Mandible | Chitin | Bite |
-| Widow Spider | Assassin | Mandible | Chitin | Precise Strike |
-| Broodmother Spider | Boss | Mandible | Hardened Chitin | Infectious Bite |
-| Forest Slime | Bruiser | Acid Body | Skin | Corrosive Slam |
-| Spore Hulk | Tank | Root Slam | Mosshide | Heavy Slam |
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Ant Worker | Insect (Ant) | Common | Swarm | Mandible | Chitin | Chitin | Rapid Jab | — |
+| Ant Soldier | Insect (Ant) | Common–Uncommon | Bruiser | Ant Lance | Hardened Chitin | Chitin | Impale | Precise, Savage |
+| Ant Guard | Insect (Ant) | Uncommon | Tank | Mandible | Hardened Chitin | Chitin | Heavy Slam | Heavy, Sundering |
+| Ant Spitter | Insect (Ant) | Uncommon | Controller | Venom Spit | Chitin | Chitin | Venom Spray | Poisonous, Infectious |
+| Ant Queen | Insect (Ant) | Unique | Boss | Queen Mandible | Hardened Chitin | Chitin | Brood Command | Broodbound, Frenzied, Regenerating |
+
+---
+
+### 5.2 Giant Forest Predators
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Dire Squirrel | Animal (Wolf*) | Common–Uncommon | Assassin | Teeth | Fur | Bone | Frenzied Bite | Frenzied, Rapid |
+| Giant Hedgehog | Animal (Bear*) | Uncommon | Tank | Spines | Hide | Bone | Rolling Slam | Heavy, Savage |
+| Forest Lynx | Animal (Wolf*) | Uncommon–Rare | Assassin | Claws | Fur | Bone | Precise Strike | Precise, Vicious |
+| Dire Owl | Animal (Wolf*) | Uncommon–Rare | Sniper | Talons | Feathers | Bone | Precise Strike | Precise, Vicious |
+| Moss Bear | Animal (Bear) | Rare | Bruiser | Paw | Mosshide | Bone | Heavy Slam | Heavy, Savage, Regenerating |
+
+*\*Uses closest matching race template. Squirrel/Lynx/Owl use Wolf stats (resist Cold, weak Fire). Hedgehog uses Bear stats (resist Crushing, weak Electricity).*
+
+---
+
+### 5.3 Plant & Wood Entities
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Twigling | Plant (Treant) | Common | Swarm | Branch | Bark | Wood | Rapid Jab | — |
+| Thorn Creeper | Plant (Treant) | Common–Uncommon | Controller | Thorn Whip | Living Bark | Wood | Root Grasp | Poisonous, Bleeding |
+| Bark Guardian | Plant (Treant) | Uncommon–Rare | Tank | Branch Halberd | Living Bark | Wood | Overhead Cleave | Heavy, Sundering |
+| Vine Horror | Plant (Treant) | Rare | Bruiser | Root Slam | Living Bark | Wood | Crushing Blow | Savage, Bleeding |
+| Ancient Oakheart | Plant (Treant) | Unique | Boss | Root Slam | Living Bark | Wood | Sweep Attack | Heavy, Regenerating, Broodbound |
+
+---
+
+### 5.4 Forest Humanoids
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Forest Poacher | Humanoid (Human) | Common | Skirmisher | Wooden Spear | Leather | Wood | Stab | Rapid, Precise |
+| Woodcut Raider | Humanoid (Human) | Common–Uncommon | Bruiser | Wooden Axe | Hide | Wood | Heavy Slam | Savage, Heavy |
+| Moss Druid | Humanoid (Human) | Uncommon–Rare | Controller | Wooden Staff | Mosshide | Wood | Root Grasp | Poisonous, Infectious |
+| Bark Knight | Humanoid (Human) | Rare | Tank | Branch Halberd | Living Bark | Wood | Crushing Blow | Heavy, Sundering |
+| Greenwarden | Humanoid (Elf) | Unique | Boss | Thorn Whip | Living Bark | Wood | Sweep Attack | Regenerating, Bleeding, Precise |
+
+---
+
+### 5.5 Forest Horrors
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Giant Spiderling | Insect (Spider) | Common | Swarm | Mandible | Chitin | Chitin | Bite | — |
+| Widow Spider | Insect (Spider) | Uncommon–Rare | Assassin | Mandible | Chitin | Chitin | Precise Strike | Poisonous, Vicious |
+| Broodmother Spider | Insect (Spider) | Unique | Boss | Mandible | Hardened Chitin | Chitin | Infectious Bite | Poisonous, Infectious, Broodbound |
+| Forest Slime | Magical (Fey*) | Uncommon–Rare | Bruiser | Acid Body | Skin | Flesh | Corrosive Slam | Corrosive, Leeching |
+| Spore Hulk | Plant (Treant) | Rare | Tank | Root Slam | Mosshide | Wood | Heavy Slam | Diseased, Heavy, Regenerating |
+
+*\*Forest Slime uses Fey race stats as closest match (resist Magic, weak Iron material).*
+
+---
+
+### 5.6 Forest Fey
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Sprite | Magical (Fey) | Common–Uncommon | Skirmisher | Wooden Arrow | Feathers | Wood | Rapid Jab | Rapid, Precise |
+| Will-o'-Wisp | Magical (Fey) | Uncommon–Rare | Controller | Innate (Magic) | Skin | Flesh | Venom Spray | Burning, Freezing |
+| Dryad | Magical (Fey) | Rare | Controller | Thorn Whip | Living Bark | Wood | Root Grasp | Regenerating, Poisonous |
+| Thornfey Knight | Magical (Fey) | Rare–Epic | Bruiser | Branch Halberd | Living Bark | Wood | Overhead Cleave | Savage, Bleeding, Vicious |
+| Archfey of Thorns | Magical (Fey) | Unique | Boss | Thorn Whip | Living Bark | Wood | Sweep Attack | Regenerating, Burning, Precise |
+
+---
+
+### 5.7 Fungal Entities
+
+| Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
+|------|------|--------|-----------|--------|-------|----------|-------|----------|
+| Sporecap | Plant (Treant) | Common | Swarm | Acid Body | Skin | Flesh | Bite | Diseased |
+| Myconid | Plant (Treant) | Common–Uncommon | Controller | Wooden Club | Mosshide | Wood | Venom Spray | Diseased, Poisonous |
+| Rot Shambler | Plant (Treant) | Uncommon–Rare | Bruiser | Root Slam | Mosshide | Flesh | Heavy Slam | Diseased, Leeching |
+| Fungal Zombie | Humanoid (Human) | Uncommon–Rare | Charger | Wooden Axe | Hide | Flesh | Charge Attack | Diseased, Infectious |
+| Cordyceps Horror | Plant (Treant) | Unique | Boss | Root Slam | Mosshide | Flesh | Corrosive Slam | Diseased, Infectious, Corrosive |
+
+---
+
+## 6. Encounter Templates
+
+These templates use core encounter composition rules (Section 7.1).
+
+---
+
+### 6.1 Standard Encounters
+
+**Ant Patrol** — Swarm (primary) / Bruiser (secondary)
+- 4× Ant Worker + 1× Ant Soldier
+- Concept: Crowd control through numbers
+
+**Predator Ambush** — Assassin (primary) / Skirmisher (secondary)
+- 1× Forest Lynx + 2× Dire Squirrel
+- Concept: Burst speed; test reaction and survivability
+
+**Thorn Thicket** — Controller (primary) / Swarm (secondary)
+- 2× Thorn Creeper + 3× Twigling
+- Concept: Root and whittle; status management
+
+**Poacher Camp** — Skirmisher (primary) / Bruiser (secondary)
+- 2× Forest Poacher + 1× Woodcut Raider
+- Concept: Weapon variety; mixed reach bands
+
+**Spider Nest** — Swarm (primary) / Assassin (secondary)
+- 4× Giant Spiderling + 1× Widow Spider
+- Concept: Poison pressure; target prioritization
+
+---
+
+### 6.2 Rare Encounters
+
+**Moss Bear Den** — Solo (Rare)
+- 1× Moss Bear (Rare, 3 prefixes)
+- Concept: Sustained durability test
+
+**Fey Glade** — Controller (primary) / Skirmisher (secondary)
+- 1× Dryad + 2× Sprite
+- Concept: Root and harass; positional awareness
+
+**Fungal Bloom** — Controller (primary) / Swarm (secondary)
+- 1× Myconid + 3× Sporecap + 1× Rot Shambler
+- Concept: Disease stacking; DOT management
+
+---
+
+### 6.3 Epic Encounter
+
+**The Thornfey Court** — Bruiser (primary) / Controller (secondary)
+- 1× Thornfey Knight (Epic) + 1× Dryad + 2× Sprite
+- Concept: High single-target threat with healing support; burst windows
+
+---
+
+## 7. Boss Phase Breakdowns
+
+---
+
+### 7.1 Ant Queen
+
+**Phase 1 — Summoning** (100%–60% HP)
+- Trigger: Start of encounter
+- Behavior: Uses Brood Command to summon Ant Workers (2 per cast)
+- Prefixes active: Broodbound
+- Adds: Ant Workers, up to 6 at a time
+- Status weakness: Burning (high effectiveness)
+- Concept: Manage add count while dealing damage to boss
+
+**Phase 2 — Escalation** (60%–30% HP)
+- Trigger: Health threshold
+- Behavior: Switches to melee with Queen Mandible; summon rate reduced
+- Prefixes active: Broodbound, Frenzied
+- Adds: Ant Soldiers replace Ant Workers
+- Phase modifier: Empowered
+- Concept: Increased direct threat; add quality over quantity
+
+**Phase 3 — Desperation** (30%–0% HP)
+- Trigger: Health threshold
+- Behavior: Frenzied melee; no more summoning
+- Prefixes active: Frenzied, Regenerating
+- Adds: None (remaining adds become Weakened)
+- Phase modifier: Enraged
+- Concept: DPS race against regeneration
+
+---
+
+### 7.2 Ancient Oakheart
+
+**Phase 1 — Introduction** (100%–70% HP)
+- Trigger: Start of encounter
+- Behavior: Slow Sweep Attacks; Root Slam targeting ranged band
+- Prefixes active: Heavy
+- Adds: 2× Twigling spawned from bark
+- Status weakness: Fire (high effectiveness)
+- Concept: Learn attack patterns; exploit slow speed
+
+**Phase 2 — Control Phase** (70%–40% HP)
+- Trigger: Health threshold
+- Behavior: Entangling roots create Rooted hazards; switches to Root Grasp skill
+- Prefixes active: Heavy, Regenerating
+- Adds: 2× Thorn Creeper
+- Phase modifier: Commanding (buffs Thorn Creepers)
+- Hazard: Entangling Roots (Rooted status, proximity trigger)
+- Concept: Positioning and status management
+
+**Phase 3 — Desperation** (40%–0% HP)
+- Trigger: Health threshold
+- Behavior: Rapid Sweep Attacks; bark sheds (armor downgrades to Bark)
+- Prefixes active: Regenerating, Broodbound
+- Adds: 4× Twigling
+- Phase modifier: Enraged
+- Concept: Burst window while dodging swarm
+
+---
+
+### 7.3 Broodmother Spider
+
+**Phase 1 — Summoning** (100%–65% HP)
+- Trigger: Start of encounter
+- Behavior: Spawns Giant Spiderlings while using Infectious Bite
+- Prefixes active: Poisonous, Broodbound
+- Adds: Giant Spiderlings (2 per wave, up to 4)
+- Status weakness: Burning (high effectiveness)
+- Concept: Manage poison spread through add control
+
+**Phase 2 — Escalation** (65%–30% HP)
+- Trigger: Health threshold
+- Behavior: Spawns Widow Spiders instead; more aggressive melee
+- Prefixes active: Poisonous, Infectious
+- Adds: 1× Widow Spider per wave
+- Phase modifier: Corrupted (increased Poison/Disease application rate)
+- Concept: Higher threat adds; status pressure intensifies
+
+**Phase 3 — Burn Phase** (30%–0% HP)
+- Trigger: Health threshold
+- Behavior: No summoning; rapid Infectious Bite spam
+- Prefixes active: Infectious, Frenzied
+- Adds: None
+- Phase modifier: Enraged
+- Concept: Survive the DOT onslaught; race to finish
+
+---
+
+### 7.4 Greenwarden
+
+**Phase 1 — Introduction** (100%–70% HP)
+- Trigger: Start of encounter
+- Behavior: Sweep Attacks with Thorn Whip from ranged band
+- Prefixes active: Bleeding, Precise
+- Adds: 1× Moss Druid
+- Status weakness: Fire (high effectiveness)
+- Concept: Deal with controller support while closing range
+
+**Phase 2 — Control Phase** (70%–35% HP)
+- Trigger: Health threshold
+- Behavior: Retreats and commands; Moss Druid uses Root Grasp
+- Prefixes active: Regenerating, Bleeding
+- Adds: 1× Moss Druid + 1× Bark Knight
+- Phase modifier: Commanding (buffs allies)
+- Hazard: Thorn Patches (Bleeding status, proximity trigger)
+- Concept: Break through defensive line; disrupt healing
+
+**Phase 3 — Desperation** (35%–0% HP)
+- Trigger: Health threshold
+- Behavior: Closes to melee; rapid Sweep Attack
+- Prefixes active: Regenerating, Precise, Bleeding
+- Adds: None (remaining allies become Weakened)
+- Phase modifier: Empowered
+- Concept: Final duel; burst through regeneration
+
+---
+
+### 7.5 Archfey of Thorns
+
+**Phase 1 — Introduction** (100%–75% HP)
+- Trigger: Start of encounter
+- Behavior: Ranged Sweep Attacks; establishes thorn hazards
+- Prefixes active: Burning, Precise
+- Adds: 2× Sprite
+- Status weakness: Cold (high effectiveness against fire-using Fey)
+- Concept: Navigate hazard field while clearing adds
+
+**Phase 2 — Escalation** (75%–50% HP)
+- Trigger: Health threshold
+- Behavior: Summons Dryad; Sweep Attacks intensify
+- Prefixes active: Burning, Regenerating
+- Adds: 1× Dryad (heals boss)
+- Phase modifier: Shielded (temporary damage mitigation)
+- Concept: Kill the Dryad or outlast the shield
+
+**Phase 3 — Control Phase** (50%–25% HP)
+- Trigger: Health threshold
+- Behavior: Roots erupt everywhere; heavy status pressure
+- Prefixes active: Regenerating, Burning, Precise
+- Adds: None
+- Phase modifier: Unstable (periodic fire/root area effects)
+- Hazard: Ley Eruption (Magic damage + Burning, timed trigger)
+- Concept: Pure hazard survival; damage during safe windows
+
+**Phase 4 — Desperation** (25%–0% HP)
+- Trigger: Health threshold
+- Behavior: All hazards clear; frenzied melee
+- Prefixes active: Burning, Precise (Regenerating removed)
+- Adds: None
+- Phase modifier: Enraged
+- Concept: Clean duel; execute before Enraged overwhelms
+
+---
+
+### 7.6 Cordyceps Horror
+
+**Phase 1 — Summoning** (100%–65% HP)
+- Trigger: Start of encounter
+- Behavior: Spawns Sporecaps while using Corrosive Slam
+- Prefixes active: Diseased, Infectious
+- Adds: 3× Sporecap
+- Status weakness: Fire (high effectiveness)
+- Concept: Clear adds before Disease spreads
+
+**Phase 2 — Escalation** (65%–35% HP)
+- Trigger: Health threshold
+- Behavior: Spawns Fungal Zombies; more aggressive melee
+- Prefixes active: Diseased, Infectious, Corrosive
+- Adds: 2× Fungal Zombie
+- Phase modifier: Corrupted
+- Hazard: Spore Cloud (Disease status, atmospheric, timed)
+- Concept: Armor degradation through Corroded stacking; DOT pressure
+
+**Phase 3 — Desperation** (35%–0% HP)
+- Trigger: Health threshold
+- Behavior: Absorbs remaining adds (heals per add consumed); rapid Corrosive Slam
+- Prefixes active: Corrosive, Leeching
+- Adds: None (consumed)
+- Phase modifier: Enraged
+- Concept: Race the heal; punished for leaving adds alive
+
+---
+
+## 8. Environmental Hazards
+
+Forest-specific hazards following core hazard rules (Section 10).
+
+| Hazard | Trigger | Effect | Duration | Avoidance |
+|--------|---------|--------|----------|-----------|
+| Toxic Spore Cloud | Proximity | Poison status | Persistent | Move out of area |
+| Entangling Roots | Proximity | Rooted status | Timed (3 ticks) | Speed-based mitigation |
+| Thorn Patches | Proximity | Bleeding status | Persistent | Reposition |
+| Falling Canopy | Timed | Crushing damage | One-shot | Speed-based mitigation |
+| Ley Eruption | Timed | Magic damage + Burning | One-shot | Positioning |
+| Spore Burst | Event (enemy death) | Disease status | One-shot | Range band |
+| Quickmoss | Proximity | Slow (Freezing equivalent) | Persistent | Move out of area |
+
+**Forest Hazard Rules**
+- Toxic Spore Clouds intensify with the Toxic Spores biome affix
+- Entangling Roots intensify with the Entangling Roots biome affix
+- Spore Burst triggers when Fungal enemies die, affecting Melee range band
+- Plant boss phases may create hazards as part of phase transitions
+
+---
+
+## 9. Forest Materials & Loot Bias
+
+### 9.1 Biome Material Table
+
+| Material | Source | Availability |
+|---------|--------|-------------|
+| Wood | All plant enemies, environmental harvesting | Common |
+| Chitin | All insect enemies | Common |
+| Bone | All animal enemies | Common |
+| Leather | Animal enemies, humanoid enemies | Common |
+| Flesh | Slimes, fungal enemies | Common |
+| Living Wood | Rare plant enemies, bosses | Rare |
+| Hardened Chitin | Rare insect enemies, bosses | Rare |
+| Fey Essence | Fey enemies (Rare+) | Rare |
+| Cordyceps Extract | Fungal enemies (Rare+) | Rare |
+
+### 9.2 Loot Category Bias
+
+| Category | Forest Bias |
+|---------|-------------|
+| Materials | Wood, Chitin, Bone dominant |
+| Weapons | Natural and Wielded (wooden) most common |
+| Armor | Bark, Chitin, Leather, Hide most common |
+| Consumables | Antidotes and healing items more frequent (Poison-heavy biome) |
+| Relics | Nature and poison themed |
+| Currency | Standard |

@@ -7,27 +7,38 @@ All values are **relative**; no fixed numbers are used.
 
 ## Table of Contents
 
-1. Design Principles & Global Rules  
-2. Core Taxonomies  
-   - Damage Types  
-   - Rarities  
-   - Weapon & Armor Labels  
-3. Combat Building Blocks  
-   - Weapons  
-   - Attack Skills  
-4. Modifiers & Effects  
-   - Support Prefixes  
-   - Status Effects  
-5. Defense & Materials  
-   - Armor Types  
-   - Materials  
-6. Entity Identity  
-   - Archetypes  
-   - Races / Subtypes  
-7. Encounter & Boss Design  
-   - Encounter Composition Rules  
-   - Boss Phase Rules  
-8. Loot & Rewards  
+1. Design Principles & Global Rules
+   - Resistance & Vulnerability Stacking
+   - Material–Damage Interactions
+   - Positioning Model
+   - Relative Value Scales
+2. Core Taxonomies
+   - Damage Types
+   - Rarities
+   - Weapon & Armor Labels
+3. Combat Building Blocks
+   - Weapons
+   - Attack Skills
+4. Modifiers & Effects
+   - Support Prefixes
+   - Status Effects
+5. Defense & Materials
+   - Armor Types
+   - Materials
+6. Entity Identity
+   - Archetypes
+   - Races / Subtypes
+7. Encounter & Boss Design
+   - Encounter Composition Rules
+   - Boss Phase Rules
+8. Loot & Rewards
+9. Player Entity
+   - Skill Acquisition
+   - Player Progression Axes
+10. Environmental Hazards
+11. Crafting System
+12. Consumables
+13. Relics  
 
 ---
 
@@ -48,11 +59,77 @@ No system may duplicate another system’s responsibility.
 - Attack speed comes from **skills and prefixes only**
 - Armor speed penalties apply after skill speed
 - Damage resolution order:
-  1. Damage Type  
-  2. Armor Type  
-  3. Race modifiers  
+  1. Damage Type
+  2. Armor Type
+  3. Race modifiers
   4. Status & Prefix effects
 - DOT effects tick independently of attack speed
+
+### Resistance & Vulnerability Stacking
+- Armor resistances and race resistances are **independent layers**
+- If both armor and race resist the same type, the entity gains **strong resistance** (one tier above normal resistance)
+- If both armor and race are weak to the same type, the entity gains **severe vulnerability** (one tier above normal weakness)
+- A resistance and a vulnerability to the same type **cancel out** to neutral
+- No entity may become fully immune through stacking alone
+
+### Material–Damage Interactions
+- Some races have material-based weaknesses (e.g., Fey are weak to Iron)
+- Attacks made with a weapon of the specified material deal **bonus damage** against that race, regardless of damage type
+- Material weakness is resolved after Race modifiers in the damage resolution order
+
+### Positioning Model
+- Combat uses an **abstract range system**, not grid-based positioning
+- Three range bands: **Melee** (Short/Medium reach), **Ranged** (Long reach), **Out of Range**
+- Weapon Reach determines which range band an attacker can target from
+- Short reach: Melee only
+- Medium reach: Melee only, but strikes before Short
+- Long reach: Ranged band, cannot be used in Melee
+- Movement is abstracted: entities are either engaged (Melee) or disengaged (Ranged/Out of Range)
+- The Rooted status prevents changing range band
+- The Charger archetype closes to Melee as its opening action
+
+### Relative Value Scales
+All numeric properties use these ordered tiers. Each tier represents a meaningful gameplay difference.
+
+**Speed Scale** (attack/action tempo):
+
+| Tier | Label |
+|------|-------|
+| 1 | Very Slow |
+| 2 | Slow |
+| 3 | Normal |
+| 4 | Fast |
+| 5 | Very Fast |
+
+**Damage Scale** (per-hit output):
+
+| Tier | Label |
+|------|-------|
+| 1 | Very Low |
+| 2 | Low |
+| 3 | Normal |
+| 4 | High |
+| 5 | Very High |
+
+**Hit Chance Scale** (accuracy):
+
+| Tier | Label |
+|------|-------|
+| 1 | Very Low |
+| 2 | Low |
+| 3 | Normal |
+| 4 | High |
+| 5 | Very High |
+
+**Crit Scale** (critical hit likelihood):
+
+| Tier | Label |
+|------|-------|
+| 0 | None |
+| 1 | Low |
+| 2 | Normal |
+| 3 | High |
+| 4 | Very High |
 
 ---
 
@@ -131,6 +208,12 @@ Labels are informational and used for AI, loot, and crafting logic.
 | Wooden Arrow | Ranged | Low | Piercing | Long |
 | Thorn Whip | Natural | Low | Slashing | Medium |
 | Branch Halberd | Wielded | High | Slashing | Long |
+| Talons | Natural | Normal | Slashing | Short |
+| Spines | Natural | Low | Piercing | Short |
+| Wooden Axe | Wielded | Normal | Slashing | Short |
+| Acid Body | Innate | Low | Acid | Short |
+| Root Slam | Natural | High | Crushing | Short |
+| Branch | Natural | Low | Crushing | Short |
 
 ---
 
@@ -163,11 +246,11 @@ Labels are informational and used for AI, loot, and crafting logic.
 | Poisonous | Applies Poison |
 | Diseased | Applies Disease |
 | Bleeding | Physical DOT |
-| Burning | Fire DOT |
+| Burning | Applies Burning status |
 | Freezing | Slow |
 | Shocking | Interrupt |
 | Corrosive | Armor reduction |
-| Crushing | Armor penetration |
+| Sundering | Armor penetration |
 | Precise | Hit chance ↑ |
 | Savage | Damage ↑ / accuracy ↓ |
 | Rapid | Speed ↑ |
@@ -275,11 +358,9 @@ Labels are informational and used for AI, loot, and crafting logic.
 | Insect | Ant | Slashing | Fire |
 | Insect | Spider | Poison | Fire |
 | Plant | Treant | Piercing | Fire |
-| Magical | Fey | Magic | Iron |
+| Magical | Fey | Magic | Iron (material) |
 
 ---
-
-## 7. Encounter & Boss Design
 
 ## 7. Encounter & Boss Design
 
@@ -524,7 +605,7 @@ Bosses should not test all systems at once.
 
 ## 8. Loot & Rewards
 
-(see Loot & Reward Rules section you already approved)## 8. Loot & Rewards
+## 8. Loot & Rewards
 
 Loot and rewards define progression, build diversity, and long-term motivation.
 All rewards are governed by **rarity**, **biome**, and **entity identity**, not raw stats.
@@ -652,6 +733,200 @@ All rewards are governed by **rarity**, **biome**, and **entity identity**, not 
 - Progression should feel steady and readable.
 - Rarity adds depth, not randomness.
 - Even failed runs contribute to long-term progress.
+
+---
+
+## 9. Player Entity
+
+The player is an entity governed by the same systems as enemies. The player does not receive special exemptions from combat rules.
+
+---
+
+### 9.1 Player Identity
+
+| Property | Rule |
+|---------|------|
+| Race | Chosen at start; determines racial resist/weakness |
+| Archetype | Not fixed; emerges from equipment and skill choices |
+| Armor | Equipped; follows standard armor rules |
+| Weapon | Equipped; follows standard weapon rules |
+| Material | Determined by equipped items |
+
+---
+
+### 9.2 Skill Acquisition
+
+- The player begins with **one basic attack skill**
+- New skills are acquired through:
+  - **Biome milestones** (clearing zones, defeating bosses)
+  - **Trainer encounters** (non-combat events within biomes)
+  - **Relic effects** (some relics grant or modify skills)
+- Skills are **never** dropped as loot
+- The player may equip a limited number of active skills at once
+- Skill slots increase with progression milestones
+
+---
+
+### 9.3 Player Progression Axes
+
+| Axis | Source |
+|------|--------|
+| Damage output | Weapon upgrades, prefixes, skills |
+| Survivability | Armor upgrades, materials, resistances |
+| Versatility | Skill slots, relic effects, consumables |
+| Reach | Weapon choice, skill choice |
+
+---
+
+## 10. Environmental Hazards
+
+Environmental hazards are non-entity threats that occupy encounters or biome zones. They use the status effect system but have no HP, armor, or loot.
+
+---
+
+### 10.1 Hazard Properties
+
+| Property | Description |
+|---------|-------------|
+| Trigger | How the hazard activates (proximity, time, event) |
+| Effect | Status effect or damage type applied |
+| Duration | Persistent, timed, or one-shot |
+| Avoidance | Whether positioning or speed can mitigate |
+
+---
+
+### 10.2 Hazard Interaction Rules
+
+- Hazards apply effects using the standard damage resolution order
+- Armor and race resistances apply normally against hazard damage
+- Hazards may affect **both** players and enemies
+- Hazards do not stack with identical hazards; overlapping hazards refresh duration
+- Boss encounters may introduce hazards during phase transitions
+- Biome affixes may add or intensify hazards
+
+---
+
+### 10.3 Hazard Categories
+
+| Category | Examples |
+|---------|----------|
+| Terrain | Quicksand (Rooted), Thorns (Bleeding), Ice Patches (Slow) |
+| Atmospheric | Toxic Clouds (Poison), Spore Bursts (Disease), Heat Waves (Burning) |
+| Structural | Falling Debris (Crushing damage), Collapsing Ground (repositioning) |
+| Magical | Ley Surges (Magic damage), Corruption Zones (Vulnerable) |
+
+Specific hazard instances are defined per biome.
+
+---
+
+## 11. Crafting System
+
+Crafting converts materials into equipment, consumables, and upgrades.
+
+---
+
+### 11.1 Crafting Rules
+
+- Crafting requires **materials** (see Section 5.2 and biome material tables)
+- Crafted items follow standard weapon, armor, and prefix rules
+- Crafted item rarity is determined by:
+  - material rarity
+  - recipe complexity
+  - crafting milestone tier
+- Crafted items may have **one guaranteed prefix** chosen by the player
+- Additional prefixes follow standard rarity-based prefix count rules
+- Crafting recipes are unlocked through:
+  - biome exploration
+  - boss defeats
+  - material discovery
+
+---
+
+### 11.2 Crafting Actions
+
+| Action | Input | Output |
+|--------|-------|--------|
+| Forge | Materials + Recipe | New weapon or armor |
+| Upgrade | Equipment + Materials | Increased material tier |
+| Reforge | Equipment + Materials | Reroll prefixes |
+| Salvage | Equipment | Materials (partial) |
+| Brew | Materials + Recipe | Consumable |
+
+---
+
+### 11.3 Crafting Constraints
+
+- Crafted items cannot exceed the player's current biome tier
+- Unique items cannot be crafted or salvaged
+- Reforging preserves the item's base type and material
+- Salvaging returns materials based on the item's rarity
+
+---
+
+## 12. Consumables
+
+Consumables are single-use items that provide temporary effects.
+
+---
+
+### 12.1 Consumable Categories
+
+| Category | Effect Type | Duration |
+|---------|------------|----------|
+| Healing | HP recovery | Instant |
+| Antidote | Cleanse status effect | Instant |
+| Buff Potion | Stat increase | Timed |
+| Resistance Elixir | Resist a damage type | Timed |
+| Weapon Oil | Add prefix to next N attacks | Charges |
+| Trap | Place environmental hazard | Triggered |
+
+---
+
+### 12.2 Consumable Rules
+
+- Consumables are acquired through loot, crafting, or environmental harvesting
+- Only one buff potion and one resistance elixir may be active at a time
+- Consumable rarity affects potency (duration, strength) not effect type
+- Consumables cannot replicate Unique item effects
+- Traps follow environmental hazard rules (Section 10)
+
+---
+
+## 13. Relics
+
+Relics are rare passive items that alter gameplay rules.
+
+---
+
+### 13.1 Relic Properties
+
+| Property | Description |
+|---------|-------------|
+| Passive Effect | Always-on modifier to a core system |
+| Slot | Relics occupy a limited number of relic slots |
+| Source | Boss drops, biome milestones, rare events |
+| Rarity | Rare, Epic, or Unique only |
+
+---
+
+### 13.2 Relic Effect Categories
+
+| Category | Example Effects |
+|---------|----------------|
+| Offensive | Crit chance ↑, DOT duration ↑, bonus damage vs a race |
+| Defensive | Resist a status effect, armor ↑ vs a damage type |
+| Utility | Extra skill slot, consumable duration ↑, material drop ↑ |
+| Rule-Altering | Change how a prefix works, modify phase trigger conditions |
+
+---
+
+### 13.3 Relic Rules
+
+- Maximum **3 relics** equipped at once
+- Relic effects do not stack with identical relics
+- Unique relics are one-per-save
+- Rule-altering relics override the specific rule they modify and note the change explicitly
+- Relics cannot be crafted; they can only be found
 
 ---
 
