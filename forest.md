@@ -1,4 +1,12 @@
-# Forest Biome
+# AutoRPG – Forest Biome Specification
+
+This document defines all **Forest biome content** for AutoRPG.
+It extends the content catalogs in **core.md** and is simulated by **engine.md**.
+
+`forest.md` answers:
+- what enemies, weapons, and skills exist in the Forest
+- how Forest encounters and bosses are structured
+- what hazards, materials, and loot the Forest provides
 
 ---
 
@@ -8,6 +16,7 @@
 2. Biome Affixes
 3. Forest-Specific Weapons
 4. Forest-Specific Skills
+   - Skill–Weapon Compatibility
 5. Forest Enemy Roster
    - Ant Colony Hierarchy
    - Giant Forest Predators
@@ -53,6 +62,7 @@ These weapons are defined for forest biome use and extend the core weapon table.
 |------|-------|--------|------|-------|
 | Ant Lance | Natural | High | Piercing | Medium |
 | Queen Mandible | Natural | High | Piercing | Short |
+| Wisp Flame | Innate | Low | Magic | Long |
 
 ---
 
@@ -60,20 +70,34 @@ These weapons are defined for forest biome use and extend the core weapon table.
 
 These skills are defined for forest biome use and extend the core skill table.
 
-| Skill | Damage | Hit | Speed | Crit |
-|------|--------|-----|-------|------|
-| Frenzied Bite | Normal | Normal | Very Fast | Normal |
-| Rolling Slam | High | Low | Slow | High |
-| Overhead Cleave | High | Normal | Slow | Normal |
-| Brood Command | None | — | Slow | None |
-| Infectious Bite | Normal | High | Normal | Low |
-| Corrosive Slam | Normal | Normal | Slow | Low |
+| Skill | Damage | Hit | Speed | Crit | Scope |
+|------|--------|-----|-------|------|-------|
+| Frenzied Bite | Normal | Normal | Very Fast | Normal | Single |
+| Rolling Slam | High | Low | Slow | High | Single |
+| Overhead Cleave | High | Normal | Slow | Normal | Cleave |
+| Brood Command | None | None | Slow | None | — |
+| Infectious Bite | Normal | High | Normal | Low | Single |
+| Corrosive Slam | Normal | Normal | Slow | Low | Single |
+| Nature's Mend | None | None | Normal | None | Ally |
 
 **Skill Notes**
 - **Brood Command**: Summons Ant Workers; does not deal direct damage. Summon count scales with boss phase.
 - **Infectious Bite**: Applies Poison status on hit. If target is already Poisoned, applies Disease instead.
 - **Corrosive Slam**: Applies Corroded status on hit.
 - **Frenzied Bite**: Speed increases further at low HP (mirrors Frenzied prefix behavior).
+- **Nature's Mend**: Heals a single ally (Ally scope). Non-attack action — skips hit/crit/damage resolution. Used by Dryad.
+
+**Skill–Weapon Compatibility** (extends core.md Section 3.3)
+
+| Skill | Compatible Labels |
+|------|------------------|
+| Frenzied Bite | Natural only |
+| Rolling Slam | Natural only |
+| Overhead Cleave | Wielded, Natural |
+| Brood Command | Any (non-attack) |
+| Infectious Bite | Natural only |
+| Corrosive Slam | Natural only |
+| Nature's Mend | Any (non-attack) |
 
 ---
 
@@ -88,7 +112,7 @@ All enemies list Race, Rarity range, Material, and compatible Prefixes alongside
 | Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
 |------|------|--------|-----------|--------|-------|----------|-------|----------|
 | Ant Worker | Insect (Ant) | Common | Swarm | Mandible | Chitin | Chitin | Rapid Jab | — |
-| Ant Soldier | Insect (Ant) | Common–Uncommon | Bruiser | Ant Lance | Hardened Chitin | Chitin | Impale | Precise, Savage |
+| Ant Soldier | Insect (Ant) | Common–Uncommon | Bruiser | Ant Lance | Hardened Chitin | Chitin | Impale | Savage, Vicious |
 | Ant Guard | Insect (Ant) | Uncommon | Tank | Mandible | Hardened Chitin | Chitin | Heavy Slam | Heavy, Sundering |
 | Ant Spitter | Insect (Ant) | Uncommon | Controller | Venom Spit | Chitin | Chitin | Venom Spray | Poisonous, Infectious |
 | Ant Queen | Insect (Ant) | Unique | Boss | Queen Mandible | Hardened Chitin | Chitin | Brood Command | Broodbound, Frenzied, Regenerating |
@@ -99,7 +123,7 @@ All enemies list Race, Rarity range, Material, and compatible Prefixes alongside
 
 | Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
 |------|------|--------|-----------|--------|-------|----------|-------|----------|
-| Dire Squirrel | Animal (Wolf*) | Common–Uncommon | Assassin | Teeth | Fur | Bone | Frenzied Bite | Frenzied, Rapid |
+| Dire Squirrel | Animal (Wolf*) | Common–Uncommon | Assassin | Teeth | Fur | Bone | Frenzied Bite | Frenzied, Vicious |
 | Giant Hedgehog | Animal (Bear*) | Uncommon | Tank | Spines | Hide | Bone | Rolling Slam | Heavy, Savage |
 | Forest Lynx | Animal (Wolf*) | Uncommon–Rare | Assassin | Claws | Fur | Bone | Precise Strike | Precise, Vicious |
 | Dire Owl | Animal (Wolf*) | Uncommon–Rare | Sniper | Talons | Feathers | Bone | Precise Strike | Precise, Vicious |
@@ -152,8 +176,8 @@ All enemies list Race, Rarity range, Material, and compatible Prefixes alongside
 | Enemy | Race | Rarity | Archetype | Weapon | Armor | Material | Skill | Prefixes |
 |------|------|--------|-----------|--------|-------|----------|-------|----------|
 | Sprite | Magical (Fey) | Common–Uncommon | Skirmisher | Wooden Arrow | Feathers | Wood | Rapid Jab | Rapid, Precise |
-| Will-o'-Wisp | Magical (Fey) | Uncommon–Rare | Controller | Innate (Magic) | Skin | Flesh | Venom Spray | Burning, Freezing |
-| Dryad | Magical (Fey) | Rare | Controller | Thorn Whip | Living Bark | Wood | Root Grasp | Regenerating, Poisonous |
+| Will-o'-Wisp | Magical (Fey) | Uncommon–Rare | Controller | Wisp Flame | Skin | Flesh | Venom Spray | Burning, Freezing |
+| Dryad | Magical (Fey) | Rare | Controller | Thorn Whip | Living Bark | Wood | Root Grasp / Nature's Mend | Regenerating, Poisonous |
 | Thornfey Knight | Magical (Fey) | Rare–Epic | Bruiser | Branch Halberd | Living Bark | Wood | Overhead Cleave | Savage, Bleeding, Vicious |
 | Archfey of Thorns | Magical (Fey) | Unique | Boss | Thorn Whip | Living Bark | Wood | Sweep Attack | Regenerating, Burning, Precise |
 
@@ -167,13 +191,13 @@ All enemies list Race, Rarity range, Material, and compatible Prefixes alongside
 | Myconid | Plant (Treant) | Common–Uncommon | Controller | Wooden Club | Mosshide | Wood | Venom Spray | Diseased, Poisonous |
 | Rot Shambler | Plant (Treant) | Uncommon–Rare | Bruiser | Root Slam | Mosshide | Flesh | Heavy Slam | Diseased, Leeching |
 | Fungal Zombie | Humanoid (Human) | Uncommon–Rare | Charger | Wooden Axe | Hide | Flesh | Charge Attack | Diseased, Infectious |
-| Cordyceps Horror | Plant (Treant) | Unique | Boss | Root Slam | Mosshide | Flesh | Corrosive Slam | Diseased, Infectious, Corrosive |
+| Cordyceps Horror | Plant (Treant) | Unique | Boss | Root Slam | Mosshide | Flesh | Corrosive Slam | Diseased, Corrosive, Leeching |
 
 ---
 
 ## 6. Encounter Templates
 
-These templates use core encounter composition rules (Section 7.1).
+These templates use encounter composition rules from core.md Section 7.
 
 ---
 
@@ -183,8 +207,8 @@ These templates use core encounter composition rules (Section 7.1).
 - 4× Ant Worker + 1× Ant Soldier
 - Concept: Crowd control through numbers
 
-**Predator Ambush** — Assassin (primary) / Skirmisher (secondary)
-- 1× Forest Lynx + 2× Dire Squirrel
+**Predator Ambush** — Assassin (primary) / Charger (secondary)
+- 1× Forest Lynx + 1× Dire Squirrel + 1× Fungal Zombie
 - Concept: Burst speed; test reaction and survivability
 
 **Thorn Thicket** — Controller (primary) / Swarm (secondary)
@@ -385,7 +409,7 @@ These templates use core encounter composition rules (Section 7.1).
 **Phase 1 — Summoning** (100%–65% HP)
 - Trigger: Start of encounter
 - Behavior: Spawns Sporecaps while using Corrosive Slam
-- Prefixes active: Diseased, Infectious
+- Prefixes active: Diseased
 - Adds: 3× Sporecap
 - Status weakness: Fire (high effectiveness)
 - Concept: Clear adds before Disease spreads
@@ -393,7 +417,7 @@ These templates use core encounter composition rules (Section 7.1).
 **Phase 2 — Escalation** (65%–35% HP)
 - Trigger: Health threshold
 - Behavior: Spawns Fungal Zombies; more aggressive melee
-- Prefixes active: Diseased, Infectious, Corrosive
+- Prefixes active: Diseased, Corrosive
 - Adds: 2× Fungal Zombie
 - Phase modifier: Corrupted
 - Hazard: Spore Cloud (Disease status, atmospheric, timed)
@@ -411,7 +435,7 @@ These templates use core encounter composition rules (Section 7.1).
 
 ## 8. Environmental Hazards
 
-Forest-specific hazards following core hazard rules (Section 10).
+Forest-specific hazards following hazard rules from core.md Section 10.
 
 | Hazard | Trigger | Effect | Duration | Avoidance |
 |--------|---------|--------|----------|-----------|

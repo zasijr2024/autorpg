@@ -34,7 +34,7 @@ Tie-breakers always use:
 
 ### 1.3 Core Combat State per Entity
 Each entity tracks:
-- `hp_current`, `hp_band` (Very Low .. Very High)
+- `hp_current`, `hp_band` (Fragile / Low / Normal / High / Massive — see core.md Health scale)
 - `position_band` (Melee / Ranged / Out-of-Range)
 - `next_action_tick`
 - `threat_table` (if enemy AI uses threat; player can also use for taunt logic)
@@ -139,6 +139,9 @@ Archetypes may override step (2) and (3) only:
 - Sniper: prioritize lowest armor effectiveness (weakest to chosen damage type)
 - Controller: prioritize highest impact (entities with strongest output or most allies nearby)
 - Swarm: prioritize lowest spawn_order among valid targets (to avoid pseudo-random)
+- Bruiser: use default priority (no override)
+- Skirmisher: use default priority (no override)
+- Charger: prioritize highest effective HP (burst the toughest target)
 
 Overrides must remain deterministic.
 
@@ -167,7 +170,22 @@ Hit and crit are resolved via accumulators per entity:
 - Each action adds `hit_gain` and `crit_gain` based on skill tiers and modifiers.
 - When an accumulator reaches a threshold, it triggers and subtracts the threshold.
 
-This makes “chance” predictable over time.
+This makes "chance" predictable over time.
+
+### 5.1.1 Tier-to-Accumulator Mapping
+
+Accumulator gains are derived from the relative tier labels defined in core.md.
+
+| Tier | Accumulator Gain (relative) |
+|-----|----------------------------|
+| Very Low | Slowest accumulation |
+| Low | Below-average accumulation |
+| Normal | Baseline accumulation |
+| High | Above-average accumulation |
+| Very High | Fastest accumulation |
+
+The exact numeric values are implementation-defined but must preserve the tier ordering.
+A `None` tier means the accumulator never gains (e.g., Crit = None means no crits).
 
 ### 5.2 Hit Resolution
 - If the attack is eligible to hit, add `hit_gain`.
@@ -202,8 +220,9 @@ When an attack hits, resolve damage in this order:
 2) Damage type interactions (physical/elemental/exotic)
 3) Armor type resistance / vulnerability
 4) Race resistance / weakness
-5) Prefix and status modifiers (e.g., Vulnerable, Corroded)
-6) Apply final damage to HP
+5) Material–damage interaction (bonus damage if weapon material matches race material weakness)
+6) Prefix and status modifiers (e.g., Vulnerable, Corroded)
+7) Apply final damage to HP
 
 ### 6.2 Armor & Resistance Rules
 - Resist reduces effective damage impact by one band (conceptually).
@@ -211,7 +230,7 @@ When an attack hits, resolve damage in this order:
 - If multiple sources apply:
   - resist and vulnerability cancel first
   - remaining effects apply once
-No system may apply more than one net band shift unless explicitly designed.
+No **single source** may apply more than one band shift. The exception is resistance stacking (see core.md Section 1): when armor and race both resist the same type, the combined strong resistance applies a two-band shift. This is the only case where stacking exceeds one band.
 
 ### 6.3 DOT Damage
 DOT effects apply damage on DOT tick steps, not on the initial application step.
@@ -257,18 +276,23 @@ The engine uses abstract bands:
 
 ### 8.2 Reach Validation
 A weapon’s reach determines which bands it can hit:
-- Short: melee only
-- Medium: melee + close ranged (if defined)
-- Long: melee + ranged
-- Ranged label: ranged only unless specified
+- Short: Melee band only
+- Medium: Melee band only, but strikes before Short reach in action resolution
+- Long: Melee + Ranged bands
+- Ranged label: Ranged band only (cannot hit Melee unless specified)
 
-### 8.3 Movement (Optional Engine Feature)
-If movement exists:
-- movement is resolved as an action that consumes an action interval
-- Root prevents movement actions
-- bosses may manipulate position bands per phase
+### 8.3 Movement
+Movement exists as a **passive system**, not a player action:
+- Entities are assigned a position band at encounter start based on weapon reach (Short/Medium → Melee, Long/Ranged → Ranged)
+- Entities do not actively move between bands during combat
+- Rooted status prevents forced repositioning (from boss abilities or hazards)
+- Bosses and hazards may force repositioning during phase transitions
+- "Move out of area" hazard avoidance means the entity's position band changes at the end of the current tick if not Rooted
 
-If movement is not implemented, position bands are static and defined by encounter composition.
+This keeps combat simple for AutoRPG while giving Rooted and positioning meaningful roles.
+
+### 8.4 Non-Attack Actions
+Some skills do not deal damage (e.g., summon, heal). These follow the same scheduling rules as attacks but skip hit/crit resolution and damage resolution. They apply their effects during step (2) of tick order (2.2) as on-action effects.
 
 ---
 
@@ -363,3 +387,22 @@ To support offline progress and pause/resume:
 - Content grows without engine refactors
 
 This engine spec is the stable foundation for all content modules.
+
+---
+
+## 14. Content Dependencies
+
+This section maps which core.md sections each engine section depends on.
+
+| Engine Section | Depends on (core.md) |
+|---------------|---------------------|
+| 2. Time & Tick Model | Section 1 (Relative Value Scales — speed tiers) |
+| 3. Action Scheduling | Section 3.2 (Attack Skills — speed tier), Section 4.1 (Prefixes — speed modifiers) |
+| 4. Targeting & Threat | Section 6.1 (Archetypes — targeting overrides) |
+| 5. Hit & Crit Resolution | Section 3.2 (Attack Skills — hit/crit tiers) |
+| 6. Damage Resolution | Section 2.1 (Damage Types), Section 5.1 (Armor), Section 6.2 (Races), Section 1 (Resistance Stacking, Material–Damage Interactions) |
+| 7. Status Application | Section 4.3 (Status Effects — types, stacking rules) |
+| 8. Positioning, Reach & Movement | Section 3.1 (Weapons — reach), Section 4.3 (Status Effects — Rooted) |
+| 9. Encounter Execution | Section 7 (Encounter & Boss Design), Section 1 (Complexity Caps) |
+| 10. Boss Phases | Section 7.4 (Boss Phase Rules) |
+| 11. Run Lifecycle | Section 14 (Player Progression), Section 15 (World Map & Biome Flow) |
